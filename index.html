@@ -550,11 +550,11 @@
         <h2>🎓 Портал выпускников ИС-22</h2>
         <p>Выберите вашу роль:</p>
         <div class="role-buttons">
-            <button class="role-btn" onclick="selectRole(this, 'starosta')">⭐ Староста</button>
-            <button class="role-btn" onclick="selectRole(this, 'student')">📚 Учащийся</button>
+            <button class="role-btn" id="starostaBtn">⭐ Староста</button>
+            <button class="role-btn" id="studentBtn">📚 Учащийся</button>
         </div>
         <input type="text" id="userNameInput" class="name-input" placeholder="Введите ваше имя...">
-        <button class="btn-primary" onclick="login()" style="margin-top:1rem; width:100%;">Войти</button>
+        <button class="btn-primary" id="loginBtn" style="margin-top:1rem; width:100%;">Войти</button>
     </div>
 </div>
 
@@ -574,7 +574,7 @@
             </div>
             <div style="display:flex; align-items:center; gap:1rem;">
                 <span id="currentUserDisplay" style="color:#212529;"></span>
-                <button class="btn-secondary" onclick="logout()">Выйти</button>
+                <button class="btn-secondary" id="logoutBtn">Выйти</button>
             </div>
         </div>
     </header>
@@ -604,7 +604,7 @@
         <div id="adminPanelSection" style="display:none;">
             <h2 style="color:#212529; margin-bottom:1rem;">⚙️ Админ-панель (Староста)</h2>
             <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
-                <button class="btn-primary" onclick="showAddAlumniModal()">+ Добавить выпускника</button>
+                <button class="btn-primary" id="showAddAlumniBtn">+ Добавить выпускника</button>
             </div>
             <h3 style="color:#212529;">👥 Список выпускников</h3>
             <div id="alumniTable" style="overflow-x:auto;"></div>
@@ -697,7 +697,7 @@
         
         <p style="font-weight:500; margin-bottom:0.5rem;">📝 Написать комментарий:</p>
         <textarea id="newCommentContent" rows="2" placeholder="Написать комментарий..." style="width:100%; padding:0.7rem; border-radius:1rem; border:1px solid #dee2e6;"></textarea>
-        <button class="btn-primary" onclick="addCommentFromModal()" style="margin-top:0.8rem;">Отправить</button>
+        <button class="btn-primary" id="sendCommentBtn">Отправить</button>
         
         <div class="modal-buttons" style="margin-top:1rem;">
             <button type="button" id="closeViewPostModalBtn">Закрыть</button>
@@ -713,7 +713,7 @@
     const SUPABASE_URL = 'https://adezgrsqixyyraokvmch.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_Ous-e7hlQ9tI9DpSU7Qr8w_Bs_Z9RdH';
     
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     
     // ==================== ПЕРЕМЕННЫЕ ====================
     let currentUser = null;
@@ -737,15 +737,18 @@
         setTimeout(() => toast.classList.remove('show'), 2000);
     }
 
-    // ==================== ВЫБОР РОЛИ (ИСПРАВЛЕНО) ====================
-    function selectRole(btn, role) {
-        selectedRole = role;
-        const btns = document.querySelectorAll('.role-btn');
-        for (let i = 0; i < btns.length; i++) {
-            btns[i].classList.remove('selected');
-        }
-        btn.classList.add('selected');
-    }
+    // ==================== ВЫБОР РОЛИ ====================
+    document.getElementById('starostaBtn').addEventListener('click', function() {
+        selectedRole = 'starosta';
+        document.getElementById('starostaBtn').classList.add('selected');
+        document.getElementById('studentBtn').classList.remove('selected');
+    });
+    
+    document.getElementById('studentBtn').addEventListener('click', function() {
+        selectedRole = 'student';
+        document.getElementById('studentBtn').classList.add('selected');
+        document.getElementById('starostaBtn').classList.remove('selected');
+    });
 
     // ==================== ПРЕВЬЮ ФОТО ====================
     document.getElementById('postImageFile').addEventListener('change', function(e) {
@@ -764,7 +767,7 @@
 
     // ==================== ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE ====================
     async function loadPosts() {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('posts')
             .select('*')
             .order('created_at_timestamp', { ascending: false });
@@ -776,7 +779,7 @@
     }
 
     async function loadAlumni() {
-        const { data, error } = await supabase.from('alumni').select('*').order('id');
+        const { data, error } = await supabaseClient.from('alumni').select('*').order('id');
         if (error) {
             console.error('Ошибка загрузки выпускников:', error);
             return [];
@@ -785,7 +788,7 @@
     }
 
     async function loadComments() {
-        const { data, error } = await supabase.from('comments').select('*').order('id');
+        const { data, error } = await supabaseClient.from('comments').select('*').order('id');
         if (error) {
             console.error('Ошибка загрузки комментариев:', error);
             return [];
@@ -794,7 +797,7 @@
     }
 
     async function loadEvents() {
-        const { data, error } = await supabase.from('events').select('*').order('event_date');
+        const { data, error } = await supabaseClient.from('events').select('*').order('event_date');
         if (error) {
             console.error('Ошибка загрузки мероприятий:', error);
             return [];
@@ -806,13 +809,8 @@
     window.deletePost = async function(postId) {
         if (!confirm('Удалить этот пост?')) return;
         
-        const { error } = await supabase.from('posts').delete().eq('id', postId);
-        if (error) {
-            showToast('Ошибка удаления', true);
-            return;
-        }
-        
-        await supabase.from('comments').delete().eq('post_id', postId);
+        await supabaseClient.from('posts').delete().eq('id', postId);
+        await supabaseClient.from('comments').delete().eq('post_id', postId);
         
         showToast('Пост удалён');
         renderFeed();
@@ -822,11 +820,7 @@
     window.deleteComment = async function(commentId) {
         if (!confirm('Удалить этот комментарий?')) return;
         
-        const { error } = await supabase.from('comments').delete().eq('id', commentId);
-        if (error) {
-            showToast('Ошибка удаления', true);
-            return;
-        }
+        await supabaseClient.from('comments').delete().eq('id', commentId);
         
         showToast('Комментарий удалён');
         if (window.currentViewPostId) {
@@ -837,11 +831,7 @@
     window.deleteEvent = async function(eventId) {
         if (!confirm('Удалить это мероприятие?')) return;
         
-        const { error } = await supabase.from('events').delete().eq('id', eventId);
-        if (error) {
-            showToast('Ошибка удаления', true);
-            return;
-        }
+        await supabaseClient.from('events').delete().eq('id', eventId);
         
         showToast('Мероприятие удалено');
         renderEvents();
@@ -850,11 +840,7 @@
     window.deleteAlumni = async function(id) {
         if (!confirm('Удалить выпускника?')) return;
         
-        const { error } = await supabase.from('alumni').delete().eq('id', id);
-        if (error) {
-            showToast('Ошибка удаления', true);
-            return;
-        }
+        await supabaseClient.from('alumni').delete().eq('id', id);
         
         showToast('Выпускник удалён');
         renderAdminPanel();
@@ -1028,7 +1014,7 @@
         openCommentModal(postId);
     };
 
-    window.addCommentFromModal = async function() {
+    document.getElementById('sendCommentBtn').addEventListener('click', async function() {
         const content = document.getElementById('newCommentContent').value;
         const userName = currentUser?.name || 'Гость';
         
@@ -1037,7 +1023,7 @@
             return;
         }
         
-        const { error } = await supabase.from('comments').insert([{
+        const { error } = await supabaseClient.from('comments').insert([{
             post_id: window.currentViewPostId,
             user_name: userName,
             content: content
@@ -1051,7 +1037,7 @@
         showToast('Комментарий добавлен');
         document.getElementById('newCommentContent').value = '';
         openCommentModal(window.currentViewPostId);
-    };
+    });
 
     // ==================== ВЫПУСКНИКИ ====================
     async function renderAlumni() {
@@ -1114,7 +1100,7 @@
     // ==================== АДМИН-ПАНЕЛЬ ====================
     async function renderAdminPanel() {
         const alumni = await loadAlumni();
-        let alumniHtml = '<table style="width:100%; border-collapse:collapse; background:white; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);"><thead><tr style="background:#f8f9fa;"><th style="padding:0.8rem; text-align:left;">ID</th><th style="padding:0.8rem; text-align:left;">ФИО</th><th style="padding:0.8rem; text-align:left;">Дата рождения</th><th style="padding:0.8rem; text-align:left;">Телефон</th><th style="padding:0.8rem; text-align:left;"></th></tr></thead><tbody>';
+        let alumniHtml = '<table style="width:100%; border-collapse:collapse; background:white; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);"><thead><tr style="background:#f8f9fa;"><th style="padding:0.8rem; text-align:left;">ID</th><th style="padding:0.8rem; text-align:left;">ФИО</th><th style="padding:0.8rem; text-align:left;">Дата рождения</th><th style="padding:0.8rem; text-align:left;">Телефон</th><th style="padding:0.8rem; text-align:left;"></th><tr></thead><tbody>';
         for (let i = 0; i < alumni.length; i++) {
             const a = alumni[i];
             alumniHtml += `<tr>
@@ -1125,7 +1111,7 @@
                 <td style="padding:0.8rem;"><button class="btn-warning" onclick="editAlumni(${a.id})">✏️</button> <button class="btn-danger" onclick="deleteAlumni(${a.id})">🗑️</button></td>
             </tr>`;
         }
-        alumniHtml += '</tbody></table>';
+        alumniHtml += '</tbody></tr>';
         document.getElementById('alumniTable').innerHTML = alumniHtml;
         
         const posts = await loadPosts();
@@ -1179,18 +1165,10 @@
         };
         
         if (editId && editId !== '') {
-            const { error } = await supabase.from('posts').update(postData).eq('id', editId);
-            if (error) {
-                showToast('Ошибка обновления', true);
-                return;
-            }
+            await supabaseClient.from('posts').update(postData).eq('id', editId);
             showToast('Пост обновлён!');
         } else {
-            const { error } = await supabase.from('posts').insert([postData]);
-            if (error) {
-                showToast('Ошибка создания', true);
-                return;
-            }
+            await supabaseClient.from('posts').insert([postData]);
             showToast('Пост создан!');
         }
         
@@ -1217,18 +1195,10 @@
         };
         
         if (editId && editId !== '') {
-            const { error } = await supabase.from('alumni').update(alumniData).eq('id', editId);
-            if (error) {
-                showToast('Ошибка обновления', true);
-                return;
-            }
+            await supabaseClient.from('alumni').update(alumniData).eq('id', editId);
             showToast('Выпускник обновлён');
         } else {
-            const { error } = await supabase.from('alumni').insert([alumniData]);
-            if (error) {
-                showToast('Ошибка добавления', true);
-                return;
-            }
+            await supabaseClient.from('alumni').insert([alumniData]);
             showToast('Выпускник добавлен');
         }
         
@@ -1253,18 +1223,10 @@
         };
         
         if (editId && editId !== '') {
-            const { error } = await supabase.from('events').update(eventData).eq('id', editId);
-            if (error) {
-                showToast('Ошибка обновления', true);
-                return;
-            }
+            await supabaseClient.from('events').update(eventData).eq('id', editId);
             showToast('Мероприятие обновлено');
         } else {
-            const { error } = await supabase.from('events').insert([eventData]);
-            if (error) {
-                showToast('Ошибка создания', true);
-                return;
-            }
+            await supabaseClient.from('events').insert([eventData]);
             showToast('Мероприятие создано');
         }
         
@@ -1275,16 +1237,16 @@
     });
 
     // ==================== АВТОРИЗАЦИЯ ====================
-    function showAddAlumniModal() {
+    document.getElementById('showAddAlumniBtn').addEventListener('click', function() {
         document.getElementById('alumniModalTitle').textContent = '➕ Добавить выпускника';
         document.getElementById('alumniEditId').value = '';
         document.getElementById('alumniName').value = '';
         document.getElementById('alumniBirthDate').value = '';
         document.getElementById('alumniPhone').value = '';
         document.getElementById('alumniModal').classList.add('show');
-    }
+    });
     
-    async function login() {
+    document.getElementById('loginBtn').addEventListener('click', async function() {
         const userName = document.getElementById('userNameInput').value.trim();
         if (!userName) {
             showToast('Введите ваше имя', true);
@@ -1329,19 +1291,17 @@
             document.getElementById('eventsSection').style.display = section === 'events' ? 'block' : 'none';
             document.getElementById('adminPanelSection').style.display = section === 'adminPanel' ? 'block' : 'none';
         }
-    }
+    });
     
-    function logout() {
+    document.getElementById('logoutBtn').addEventListener('click', function() {
         currentUser = null;
         selectedRole = null;
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainContent').style.display = 'none';
         document.getElementById('userNameInput').value = '';
-        const btns = document.querySelectorAll('.role-btn');
-        for (let i = 0; i < btns.length; i++) {
-            btns[i].classList.remove('selected');
-        }
-    }
+        document.getElementById('starostaBtn').classList.remove('selected');
+        document.getElementById('studentBtn').classList.remove('selected');
+    });
 
     // ==================== НАВИГАЦИЯ ====================
     const navBtns = document.querySelectorAll('.nav-btn');
