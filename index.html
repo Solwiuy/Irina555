@@ -707,55 +707,17 @@
 
 <div class="toast" id="toast">Готово</div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ==================== ДАННЫЕ (localStorage) ====================
+    // ==================== ПОДКЛЮЧЕНИЕ К ТВОЕЙ SUPABASE ====================
+    const SUPABASE_URL = 'https://adezgrsqixyyraokvmch.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_Ous-e7hlQ9tI9DpSU7Qr8w_Bs_Z9RdH';
+    
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    // ==================== ПЕРЕМЕННЫЕ ====================
     let currentUser = null;
     let selectedRole = null;
-
-    function getNextId(array) {
-        if (array.length === 0) return 1;
-        let maxId = 0;
-        for (let i = 0; i < array.length; i++) {
-            if (array[i].id > maxId) maxId = array[i].id;
-        }
-        return maxId + 1;
-    }
-
-    function reindexIds(array) {
-        for (let i = 0; i < array.length; i++) {
-            array[i].id = i + 1;
-        }
-        return array;
-    }
-
-    function getPosts() { return JSON.parse(localStorage.getItem('portal_posts') || '[]'); }
-    function getAlumni() { return JSON.parse(localStorage.getItem('portal_alumni') || '[]'); }
-    function getComments() { return JSON.parse(localStorage.getItem('portal_comments') || '[]'); }
-    function getEvents() { return JSON.parse(localStorage.getItem('portal_events') || '[]'); }
-    
-    function savePosts(data) { 
-        data = reindexIds(data);
-        localStorage.setItem('portal_posts', JSON.stringify(data)); 
-    }
-    function saveAlumni(data) { 
-        data = reindexIds(data);
-        localStorage.setItem('portal_alumni', JSON.stringify(data)); 
-    }
-    function saveComments(data) { 
-        data = reindexIds(data);
-        localStorage.setItem('portal_comments', JSON.stringify(data)); 
-    }
-    function saveEvents(data) { 
-        data = reindexIds(data);
-        localStorage.setItem('portal_events', JSON.stringify(data)); 
-    }
-
-    function initData() {
-        if (!localStorage.getItem('portal_posts')) savePosts([]);
-        if (!localStorage.getItem('portal_alumni')) saveAlumni([]);
-        if (!localStorage.getItem('portal_comments')) saveComments([]);
-        if (!localStorage.getItem('portal_events')) saveEvents([]);
-    }
 
     function escapeHtml(unsafe) {
         if (!unsafe) return '';
@@ -790,80 +752,70 @@
         }
     });
 
+    // ==================== ЗАГРУЗКА ДАННЫХ ====================
+    async function loadPosts() {
+        const { data, error } = await supabase
+            .from('posts')
+            .select('*')
+            .order('created_at_timestamp', { ascending: false });
+        if (error) return [];
+        return data || [];
+    }
+
+    async function loadAlumni() {
+        const { data, error } = await supabase.from('alumni').select('*').order('id');
+        if (error) return [];
+        return data || [];
+    }
+
+    async function loadComments() {
+        const { data, error } = await supabase.from('comments').select('*').order('id');
+        if (error) return [];
+        return data || [];
+    }
+
+    async function loadEvents() {
+        const { data, error } = await supabase.from('events').select('*').order('event_date');
+        if (error) return [];
+        return data || [];
+    }
+
     // ==================== УДАЛЕНИЕ ====================
-    window.deletePost = function(postId) {
+    window.deletePost = async function(postId) {
         if (!confirm('Удалить этот пост?')) return;
-        
-        let posts = getPosts();
-        let newPosts = [];
-        for (let i = 0; i < posts.length; i++) {
-            if (posts[i].id != postId) newPosts.push(posts[i]);
-        }
-        savePosts(newPosts);
-        
-        let comments = getComments();
-        let newComments = [];
-        for (let i = 0; i < comments.length; i++) {
-            if (comments[i].postId != postId) newComments.push(comments[i]);
-        }
-        saveComments(newComments);
-        
+        await supabase.from('posts').delete().eq('id', postId);
+        await supabase.from('comments').delete().eq('post_id', postId);
         showToast('Пост удалён');
         renderFeed();
-        if (currentUser && currentUser.role === 'starosta') renderAdminPanel();
+        if (currentUser?.role === 'starosta') renderAdminPanel();
     };
 
-    window.deleteComment = function(commentId) {
+    window.deleteComment = async function(commentId) {
         if (!confirm('Удалить этот комментарий?')) return;
-        
-        let comments = getComments();
-        let newComments = [];
-        for (let i = 0; i < comments.length; i++) {
-            if (comments[i].id != commentId) newComments.push(comments[i]);
-        }
-        saveComments(newComments);
+        await supabase.from('comments').delete().eq('id', commentId);
         showToast('Комментарий удалён');
-        if (window.currentViewPostId) {
-            openCommentModal(window.currentViewPostId);
-        }
+        if (window.currentViewPostId) openCommentModal(window.currentViewPostId);
     };
 
-    window.deleteEvent = function(eventId) {
+    window.deleteEvent = async function(eventId) {
         if (!confirm('Удалить это мероприятие?')) return;
-        
-        let events = getEvents();
-        let newEvents = [];
-        for (let i = 0; i < events.length; i++) {
-            if (events[i].id != eventId) newEvents.push(events[i]);
-        }
-        saveEvents(newEvents);
+        await supabase.from('events').delete().eq('id', eventId);
         showToast('Мероприятие удалено');
         renderEvents();
     };
 
-    window.deleteAlumni = function(id) {
+    window.deleteAlumni = async function(id) {
         if (!confirm('Удалить выпускника?')) return;
-        let alumni = getAlumni();
-        let newAlumni = [];
-        for (let i = 0; i < alumni.length; i++) {
-            if (alumni[i].id != id) newAlumni.push(alumni[i]);
-        }
-        saveAlumni(newAlumni);
+        await supabase.from('alumni').delete().eq('id', id);
         showToast('Выпускник удалён');
         renderAdminPanel();
         renderAlumni();
     };
 
     // ==================== РЕДАКТИРОВАНИЕ ====================
-    window.editPost = function(postId) {
-        const posts = getPosts();
-        let post = null;
-        for (let i = 0; i < posts.length; i++) {
-            if (posts[i].id == postId) {
-                post = posts[i];
-                break;
-            }
-        }
+    window.editPost = async function(postId) {
+        const posts = await loadPosts();
+        const post = posts.find(p => p.id == postId);
         if (!post) return;
         
         document.getElementById('postModalTitle').textContent = '✏️ Редактировать пост';
@@ -872,87 +824,59 @@
         document.getElementById('postCategory').value = post.category;
         document.getElementById('postContent').value = post.content;
         document.getElementById('postExcerpt').value = post.excerpt || '';
-        document.getElementById('postImageData').value = post.imageData || '';
+        document.getElementById('postImageData').value = post.image_data || '';
         
-        if (post.imageData) {
+        if (post.image_data) {
             const preview = document.getElementById('imagePreview');
-            preview.innerHTML = `<img src="${post.imageData}" alt="Превью">`;
+            preview.innerHTML = `<img src="${post.image_data}" alt="Превью">`;
             preview.classList.add('show');
         }
-        
         document.getElementById('postModal').classList.add('show');
     };
 
-    window.editEvent = function(eventId) {
-        const events = getEvents();
-        let event = null;
-        for (let i = 0; i < events.length; i++) {
-            if (events[i].id == eventId) {
-                event = events[i];
-                break;
-            }
-        }
+    window.editEvent = async function(eventId) {
+        const events = await loadEvents();
+        const event = events.find(e => e.id == eventId);
         if (!event) return;
         
         document.getElementById('eventModalTitle').textContent = '✏️ Редактировать мероприятие';
         document.getElementById('eventEditId').value = event.id;
         document.getElementById('eventTitle').value = event.title;
         document.getElementById('eventDescription').value = event.description || '';
-        document.getElementById('eventDate').value = event.eventDate;
+        document.getElementById('eventDate').value = event.event_date;
         document.getElementById('eventLocation').value = event.location || '';
         document.getElementById('eventModal').classList.add('show');
     };
 
-    window.editAlumni = function(id) {
-        const alumni = getAlumni();
-        let item = null;
-        for (let i = 0; i < alumni.length; i++) {
-            if (alumni[i].id == id) {
-                item = alumni[i];
-                break;
-            }
-        }
+    window.editAlumni = async function(id) {
+        const alumni = await loadAlumni();
+        const item = alumni.find(a => a.id == id);
         if (!item) return;
         
         document.getElementById('alumniModalTitle').textContent = '✏️ Редактировать выпускника';
         document.getElementById('alumniEditId').value = item.id;
         document.getElementById('alumniName').value = item.name;
-        document.getElementById('alumniBirthDate').value = item.birthDate || '';
+        document.getElementById('alumniBirthDate').value = item.birth_date || '';
         document.getElementById('alumniPhone').value = item.phone || '';
         document.getElementById('alumniModal').classList.add('show');
     };
 
     // ==================== ЛЕНТА ====================
-    function renderFeed() {
-        const posts = getPosts();
-        posts.sort((a, b) => {
-            const timeA = a.createdAtTimestamp || 0;
-            const timeB = b.createdAtTimestamp || 0;
-            return timeB - timeA;
-        });
-        
+    async function renderFeed() {
+        const posts = await loadPosts();
         const container = document.getElementById('postsList');
-        
         if (posts.length === 0) {
             container.innerHTML = '<div style="background:white; border-radius:1.5rem; padding:2rem; text-align:center; color:#6c757d;">Нет постов. Напишите первый!</div>';
             return;
         }
-        
         let html = '';
-        for (let i = 0; i < posts.length; i++) {
-            const post = posts[i];
-            let imageHtml = '';
-            if (post.imageData && post.imageData !== 'null' && post.imageData !== '') {
-                imageHtml = `<div class="post-image"><img src="${post.imageData}" alt="Фото"></div>`;
-            } else {
-                imageHtml = `<div class="post-image"><div class="no-image">📰</div></div>`;
-            }
+        for (let post of posts) {
+            let imageHtml = post.image_data && post.image_data !== 'null' && post.image_data !== '' 
+                ? `<div class="post-image"><img src="${post.image_data}" alt="Фото"></div>`
+                : `<div class="post-image"><div class="no-image">📰</div></div>`;
             
-            let categoryName = 'Новости';
-            if (post.category === 'article') categoryName = 'Статья';
-            if (post.category === 'event') categoryName = 'Мероприятие';
-            
-            let displayDate = post.createdAt || new Date(post.createdAtTimestamp).toLocaleDateString();
+            let categoryName = post.category === 'article' ? 'Статья' : post.category === 'event' ? 'Мероприятие' : 'Новости';
+            let displayDate = new Date(post.created_at).toLocaleDateString();
             
             html += `
                 <div class="post-card">
@@ -962,12 +886,12 @@
                         <h3 class="post-title" onclick="viewPost(${post.id})">${escapeHtml(post.title)}</h3>
                         <p class="post-excerpt">${escapeHtml(post.excerpt || post.content.substring(0,150))}</p>
                         <div class="post-meta">
-                            <span>✍️ ${escapeHtml(post.authorName)}</span>
+                            <span>✍️ ${escapeHtml(post.author_name)}</span>
                             <span>📅 ${displayDate}</span>
                             <button class="btn-warning" onclick="editPost(${post.id})">✏️ Ред.</button>
                             <button class="btn-delete-post" onclick="deletePost(${post.id})">🗑️ Удалить</button>
                         </div>
-                        <div style="margin-top: 1rem;">
+                        <div style="margin-top:1rem;">
                             <button class="btn-comment" onclick="openCommentModal(${post.id})">💬 Оставить комментарий</button>
                         </div>
                     </div>
@@ -978,40 +902,32 @@
     }
     
     // ==================== ОТКРЫТИЕ МОДАЛКИ КОММЕНТАРИЯ ====================
-    window.openCommentModal = function(postId) {
-        const posts = getPosts();
-        let post = null;
-        for (let i = 0; i < posts.length; i++) {
-            if (posts[i].id == postId) {
-                post = posts[i];
-                break;
-            }
-        }
+    window.openCommentModal = async function(postId) {
+        const posts = await loadPosts();
+        const post = posts.find(p => p.id == postId);
         if (!post) return;
         
         document.getElementById('viewPostTitle').textContent = post.title;
-        let displayDate = post.createdAt || new Date(post.createdAtTimestamp).toLocaleDateString();
-        document.getElementById('viewPostMeta').innerHTML = `Автор: ${escapeHtml(post.authorName)} | ${displayDate}`;
+        document.getElementById('viewPostMeta').innerHTML = `Автор: ${escapeHtml(post.author_name)} | ${new Date(post.created_at).toLocaleDateString()}`;
         
-        let imageHtml = '';
-        if (post.imageData && post.imageData !== 'null' && post.imageData !== '') {
-            imageHtml = `<img src="${post.imageData}" style="width:100%; border-radius:1rem;">`;
-        }
+        let imageHtml = post.image_data && post.image_data !== 'null' && post.image_data !== '' 
+            ? `<img src="${post.image_data}" style="width:100%; border-radius:1rem;">`
+            : '';
         document.getElementById('viewPostImage').innerHTML = imageHtml;
         document.getElementById('viewPostContent').innerHTML = post.content;
         
-        const comments = getComments();
+        const comments = await loadComments();
         let commentsHtml = '';
-        for (let i = 0; i < comments.length; i++) {
-            if (comments[i].postId == postId) {
+        for (let comment of comments) {
+            if (comment.post_id == postId) {
                 commentsHtml += `
                     <div class="comment-item">
                         <div class="comment-content">
-                            <strong>${escapeHtml(comments[i].userName)}</strong>
-                            <small>${comments[i].createdAt}</small>
-                            <p>${escapeHtml(comments[i].content)}</p>
+                            <strong>${escapeHtml(comment.user_name)}</strong>
+                            <small>${new Date(comment.created_at).toLocaleDateString()}</small>
+                            <p>${escapeHtml(comment.content)}</p>
                         </div>
-                        <button class="delete-comment-btn" onclick="deleteComment(${comments[i].id})">🗑️</button>
+                        <button class="delete-comment-btn" onclick="deleteComment(${comment.id})">🗑️</button>
                     </div>
                 `;
             }
@@ -1023,49 +939,38 @@
         window.currentViewPostId = postId;
     };
     
-    window.viewPost = function(postId) {
-        openCommentModal(postId);
-    };
+    window.viewPost = function(postId) { openCommentModal(postId); };
 
-    window.addCommentFromModal = function() {
+    window.addCommentFromModal = async function() {
         const content = document.getElementById('newCommentContent').value;
         const userName = currentUser?.name || 'Гость';
-        
         if (!content.trim()) {
             showToast('Введите текст комментария', true);
             return;
         }
-        
-        const comments = getComments();
-        const newId = getNextId(comments);
-        comments.push({
-            id: newId,
-            postId: window.currentViewPostId,
-            userName: userName,
-            content: content,
-            createdAt: new Date().toLocaleDateString()
-        });
-        saveComments(comments);
+        await supabase.from('comments').insert([{
+            post_id: window.currentViewPostId,
+            user_name: userName,
+            content: content
+        }]);
         showToast('Комментарий добавлен');
         document.getElementById('newCommentContent').value = '';
         openCommentModal(window.currentViewPostId);
     };
 
     // ==================== ВЫПУСКНИКИ ====================
-    function renderAlumni() {
-        const alumni = getAlumni();
+    async function renderAlumni() {
+        const alumni = await loadAlumni();
         const container = document.getElementById('alumniList');
         if (alumni.length === 0) {
             container.innerHTML = '<div style="text-align:center; color:#6c757d;">Нет выпускников</div>';
             return;
         }
-        
         let html = '';
-        for (let i = 0; i < alumni.length; i++) {
-            const a = alumni[i];
+        for (let a of alumni) {
             let formattedDate = '';
-            if (a.birthDate) {
-                const parts = a.birthDate.split('-');
+            if (a.birth_date) {
+                const parts = a.birth_date.split('-');
                 formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
             }
             html += `
@@ -1081,23 +986,20 @@
     }
 
     // ==================== МЕРОПРИЯТИЯ ====================
-    function renderEvents() {
-        const events = getEvents();
-        events.sort((a,b) => new Date(a.eventDate) - new Date(b.eventDate));
+    async function renderEvents() {
+        const events = await loadEvents();
         const container = document.getElementById('eventsList');
         if (events.length === 0) {
             container.innerHTML = '<div style="background:white; border-radius:1.5rem; padding:2rem; text-align:center; color:#6c757d;">Нет мероприятий</div>';
             return;
         }
-        
         let html = '';
-        for (let i = 0; i < events.length; i++) {
-            const e = events[i];
+        for (let e of events) {
             html += `
                 <div class="event-card">
                     <div class="event-content">
                         <h3>📅 ${escapeHtml(e.title)}</h3>
-                        <p><strong>📆 ${e.eventDate}</strong> | 📍 ${escapeHtml(e.location || 'место не указано')}</p>
+                        <p><strong>📆 ${e.event_date}</strong> | 📍 ${escapeHtml(e.location || 'место не указано')}</p>
                         <p>${escapeHtml(e.description || '')}</p>
                     </div>
                     <div class="event-actions">
@@ -1111,15 +1013,14 @@
     }
 
     // ==================== АДМИН-ПАНЕЛЬ ====================
-    function renderAdminPanel() {
-        const alumni = getAlumni();
-        let alumniHtml = '<table style="width:100%; border-collapse:collapse; background:white; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);"><thead><tr style="background:#f8f9fa;"><th style="padding:0.8rem; text-align:left;">ID</th><th style="padding:0.8rem; text-align:left;">ФИО</th><th style="padding:0.8rem; text-align:left;">Дата рождения</th><th style="padding:0.8rem; text-align:left;">Телефон</th><th style="padding:0.8rem; text-align:left;"></th></table></thead><tbody>';
-        for (let i = 0; i < alumni.length; i++) {
-            const a = alumni[i];
+    async function renderAdminPanel() {
+        const alumni = await loadAlumni();
+        let alumniHtml = '<table style="width:100%; border-collapse:collapse; background:white; border-radius:1rem; overflow:hidden;"><thead><tr style="background:#f8f9fa;"><th style="padding:0.8rem;">ID</th><th style="padding:0.8rem;">ФИО</th><th style="padding:0.8rem;">Дата рождения</th><th style="padding:0.8rem;">Телефон</th><th style="padding:0.8rem;"></th></tr></thead><tbody>';
+        for (let a of alumni) {
             alumniHtml += `<tr>
                 <td style="padding:0.8rem;">${a.id}</td>
                 <td style="padding:0.8rem;">${escapeHtml(a.name)}</td>
-                <td style="padding:0.8rem;">${a.birthDate || '-'}</td>
+                <td style="padding:0.8rem;">${a.birth_date || '-'}</td>
                 <td style="padding:0.8rem;">${escapeHtml(a.phone || '-')}</td>
                 <td style="padding:0.8rem;"><button class="btn-warning" onclick="editAlumni(${a.id})">✏️</button> <button class="btn-danger" onclick="deleteAlumni(${a.id})">🗑️</button></td>
             </tr>`;
@@ -1127,28 +1028,22 @@
         alumniHtml += '</tbody></table>';
         document.getElementById('alumniTable').innerHTML = alumniHtml;
         
-        const posts = getPosts();
+        const posts = await loadPosts();
         let postsHtml = '';
-        for (let i = 0; i < posts.length; i++) {
-            const p = posts[i];
-            let displayDate = p.createdAt || new Date(p.createdAtTimestamp).toLocaleDateString();
+        for (let p of posts) {
             postsHtml += `
                 <div style="background:#f8f9fa; border-radius:1rem; padding:1rem; margin-bottom:0.8rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                    <div><strong style="color:#212529;">${escapeHtml(p.title)}</strong><br><small style="color:#6c757d;">Автор: ${escapeHtml(p.authorName)} | ${displayDate}</small></div>
-                    <div>
-                        <button class="btn-warning" onclick="editPost(${p.id})">✏️ Ред.</button>
-                        <button class="btn-danger" onclick="deletePost(${p.id})">🗑️ Удалить</button>
-                    </div>
+                    <div><strong>${escapeHtml(p.title)}</strong><br><small>Автор: ${escapeHtml(p.author_name)} | ${new Date(p.created_at).toLocaleDateString()}</small></div>
+                    <div><button class="btn-warning" onclick="editPost(${p.id})">✏️ Ред.</button> <button class="btn-danger" onclick="deletePost(${p.id})">🗑️ Удалить</button></div>
                 </div>
             `;
         }
-        document.getElementById('adminPostsList').innerHTML = postsHtml || '<p style="color:#6c757d;">Нет постов</p>';
+        document.getElementById('adminPostsList').innerHTML = postsHtml || '<p>Нет постов</p>';
     }
 
     // ==================== СОЗДАНИЕ ПОСТА ====================
-    document.getElementById('postForm').addEventListener('submit', function(e) {
+    document.getElementById('postForm').addEventListener('submit', async function(e) {
         e.preventDefault();
-        
         const editId = document.getElementById('postEditId').value;
         const title = document.getElementById('postTitle').value;
         const category = document.getElementById('postCategory').value;
@@ -1160,45 +1055,25 @@
             showToast('Заполните все обязательные поля', true);
             return;
         }
-        
         if (!currentUser) {
             showToast('Ошибка: пользователь не авторизован', true);
             return;
         }
         
-        const posts = getPosts();
-        const nowTimestamp = Date.now();
-        const nowDate = new Date().toLocaleDateString();
+        const postData = {
+            title, category, content,
+            excerpt: excerpt || content.substring(0,150),
+            image_data: imageData || null,
+            author_name: currentUser.name,
+            author_role: currentUser.role,
+            created_at_timestamp: Date.now()
+        };
         
         if (editId && editId !== '') {
-            for (let i = 0; i < posts.length; i++) {
-                if (posts[i].id == editId) {
-                    posts[i].title = title;
-                    posts[i].category = category;
-                    posts[i].content = content;
-                    posts[i].excerpt = excerpt || content.substring(0,150);
-                    if (imageData) posts[i].imageData = imageData;
-                    break;
-                }
-            }
-            savePosts(posts);
+            await supabase.from('posts').update(postData).eq('id', editId);
             showToast('Пост обновлён!');
         } else {
-            const newId = getNextId(posts);
-            const newPost = {
-                id: newId,
-                title: title,
-                category: category,
-                content: content,
-                excerpt: excerpt || content.substring(0,150),
-                imageData: imageData || null,
-                authorName: currentUser.name,
-                authorRole: currentUser.role,
-                createdAt: nowDate,
-                createdAtTimestamp: nowTimestamp
-            };
-            posts.push(newPost);
-            savePosts(posts);
+            await supabase.from('posts').insert([postData]);
             showToast('Пост создан!');
         }
         
@@ -1214,31 +1089,20 @@
     });
 
     // ==================== СОЗДАНИЕ/РЕДАКТИРОВАНИЕ ВЫПУСКНИКА ====================
-    document.getElementById('alumniForm').addEventListener('submit', function(e) {
+    document.getElementById('alumniForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const editId = document.getElementById('alumniEditId').value;
-        const alumni = getAlumni();
+        const data = {
+            name: document.getElementById('alumniName').value,
+            birth_date: document.getElementById('alumniBirthDate').value,
+            phone: document.getElementById('alumniPhone').value
+        };
         
         if (editId && editId !== '') {
-            for (let i = 0; i < alumni.length; i++) {
-                if (alumni[i].id == editId) {
-                    alumni[i].name = document.getElementById('alumniName').value;
-                    alumni[i].birthDate = document.getElementById('alumniBirthDate').value;
-                    alumni[i].phone = document.getElementById('alumniPhone').value;
-                    break;
-                }
-            }
-            saveAlumni(alumni);
+            await supabase.from('alumni').update(data).eq('id', editId);
             showToast('Выпускник обновлён');
         } else {
-            const newId = getNextId(alumni);
-            alumni.push({
-                id: newId,
-                name: document.getElementById('alumniName').value,
-                birthDate: document.getElementById('alumniBirthDate').value,
-                phone: document.getElementById('alumniPhone').value
-            });
-            saveAlumni(alumni);
+            await supabase.from('alumni').insert([data]);
             showToast('Выпускник добавлен');
         }
         
@@ -1250,35 +1114,22 @@
     });
 
     // ==================== СОЗДАНИЕ/РЕДАКТИРОВАНИЕ МЕРОПРИЯТИЯ ====================
-    document.getElementById('eventForm').addEventListener('submit', function(e) {
+    document.getElementById('eventForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         const editId = document.getElementById('eventEditId').value;
-        const events = getEvents();
+        const data = {
+            title: document.getElementById('eventTitle').value,
+            description: document.getElementById('eventDescription').value,
+            event_date: document.getElementById('eventDate').value,
+            location: document.getElementById('eventLocation').value,
+            created_by: currentUser?.name || 'Админ'
+        };
         
         if (editId && editId !== '') {
-            for (let i = 0; i < events.length; i++) {
-                if (events[i].id == editId) {
-                    events[i].title = document.getElementById('eventTitle').value;
-                    events[i].description = document.getElementById('eventDescription').value;
-                    events[i].eventDate = document.getElementById('eventDate').value;
-                    events[i].location = document.getElementById('eventLocation').value;
-                    break;
-                }
-            }
-            saveEvents(events);
+            await supabase.from('events').update(data).eq('id', editId);
             showToast('Мероприятие обновлено');
         } else {
-            const newId = getNextId(events);
-            events.push({
-                id: newId,
-                title: document.getElementById('eventTitle').value,
-                description: document.getElementById('eventDescription').value,
-                eventDate: document.getElementById('eventDate').value,
-                location: document.getElementById('eventLocation').value,
-                createdBy: currentUser?.name || 'Админ',
-                createdAt: new Date().toLocaleDateString()
-            });
-            saveEvents(events);
+            await supabase.from('events').insert([data]);
             showToast('Мероприятие создано');
         }
         
@@ -1291,10 +1142,7 @@
     // ==================== АВТОРИЗАЦИЯ ====================
     function selectRole(role) {
         selectedRole = role;
-        const btns = document.querySelectorAll('.role-btn');
-        for (let i = 0; i < btns.length; i++) {
-            btns[i].classList.remove('selected');
-        }
+        document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('selected'));
         event.target.classList.add('selected');
     }
     
@@ -1307,51 +1155,27 @@
         document.getElementById('alumniModal').classList.add('show');
     }
     
-    function login() {
+    async function login() {
         const userName = document.getElementById('userNameInput').value.trim();
-        if (!userName) {
-            showToast('Введите ваше имя', true);
-            return;
-        }
-        if (!selectedRole) {
-            showToast('Выберите роль', true);
-            return;
-        }
+        if (!userName) { showToast('Введите ваше имя', true); return; }
+        if (!selectedRole) { showToast('Выберите роль', true); return; }
         
-        currentUser = {
-            name: userName,
-            role: selectedRole
-        };
+        currentUser = { name: userName, role: selectedRole };
         
         document.getElementById('loginScreen').style.display = 'none';
         document.getElementById('mainContent').style.display = 'block';
         document.getElementById('currentUserDisplay').innerHTML = `${selectedRole === 'starosta' ? '⭐' : '📚'} ${escapeHtml(userName)}`;
         
         const isStarosta = selectedRole === 'starosta';
-        const adminBtn = document.getElementById('adminNavBtn');
-        const addEventBtn = document.getElementById('addEventBtn');
+        document.getElementById('adminNavBtn').style.display = isStarosta ? 'block' : 'none';
+        document.getElementById('addEventBtn').style.display = isStarosta ? 'block' : 'none';
         
-        if (isStarosta) {
-            adminBtn.style.display = 'block';
-            addEventBtn.style.display = 'block';
-        } else {
-            adminBtn.style.display = 'none';
-            addEventBtn.style.display = 'none';
-        }
+        await renderFeed();
+        await renderAlumni();
+        await renderEvents();
+        if (isStarosta) await renderAdminPanel();
         
-        renderFeed();
-        renderAlumni();
-        renderEvents();
-        if (isStarosta) renderAdminPanel();
-        
-        const activeBtn = document.querySelector('.nav-btn.active');
-        if (activeBtn) {
-            const section = activeBtn.dataset.section;
-            document.getElementById('feedSection').style.display = section === 'feed' ? 'block' : 'none';
-            document.getElementById('alumniSection').style.display = section === 'alumni' ? 'block' : 'none';
-            document.getElementById('eventsSection').style.display = section === 'events' ? 'block' : 'none';
-            document.getElementById('adminPanelSection').style.display = section === 'adminPanel' ? 'block' : 'none';
-        }
+        document.querySelector('.nav-btn.active')?.click();
     }
     
     function logout() {
@@ -1360,47 +1184,24 @@
         document.getElementById('loginScreen').style.display = 'flex';
         document.getElementById('mainContent').style.display = 'none';
         document.getElementById('userNameInput').value = '';
-        const btns = document.querySelectorAll('.role-btn');
-        for (let i = 0; i < btns.length; i++) {
-            btns[i].classList.remove('selected');
-        }
+        document.querySelectorAll('.role-btn').forEach(btn => btn.classList.remove('selected'));
     }
 
     // ==================== НАВИГАЦИЯ ====================
-    const navBtns = document.querySelectorAll('.nav-btn');
-    for (let i = 0; i < navBtns.length; i++) {
-        navBtns[i].addEventListener('click', function() {
-            for (let j = 0; j < navBtns.length; j++) {
-                navBtns[j].classList.remove('active');
-            }
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
-            
             const section = this.dataset.section;
-            const feed = document.getElementById('feedSection');
-            const alumni = document.getElementById('alumniSection');
-            const events = document.getElementById('eventsSection');
-            const admin = document.getElementById('adminPanelSection');
-            
-            if (feed) feed.style.display = 'none';
-            if (alumni) alumni.style.display = 'none';
-            if (events) events.style.display = 'none';
-            if (admin) admin.style.display = 'none';
-            
-            if (section === 'feed') feed.style.display = 'block';
-            if (section === 'alumni') {
-                alumni.style.display = 'block';
-                renderAlumni();
-            }
-            if (section === 'events') {
-                events.style.display = 'block';
-                renderEvents();
-            }
-            if (section === 'adminPanel') {
-                admin.style.display = 'block';
-                renderAdminPanel();
-            }
+            document.getElementById('feedSection').style.display = section === 'feed' ? 'block' : 'none';
+            document.getElementById('alumniSection').style.display = section === 'alumni' ? 'block' : 'none';
+            document.getElementById('eventsSection').style.display = section === 'events' ? 'block' : 'none';
+            document.getElementById('adminPanelSection').style.display = section === 'adminPanel' ? 'block' : 'none';
+            if (section === 'alumni') renderAlumni();
+            if (section === 'events') renderEvents();
+            if (section === 'adminPanel') renderAdminPanel();
         });
-    }
+    });
 
     // ==================== ЗАКРЫТИЕ МОДАЛОК ====================
     document.getElementById('closePostModalBtn').addEventListener('click', () => {
@@ -1409,7 +1210,6 @@
         document.getElementById('postEditId').value = '';
         document.getElementById('imagePreview').innerHTML = '';
         document.getElementById('imagePreview').classList.remove('show');
-        document.getElementById('postImageData').value = '';
     });
     document.getElementById('closeAlumniModalBtn').addEventListener('click', () => {
         document.getElementById('alumniModal').classList.remove('show');
@@ -1445,9 +1245,6 @@
         document.getElementById('eventLocation').value = '';
         document.getElementById('eventModal').classList.add('show');
     });
-
-    // ==================== ЗАПУСК ====================
-    initData();
 </script>
 </body>
 </html>
