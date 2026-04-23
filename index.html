@@ -550,8 +550,8 @@
         <h2>🎓 Портал выпускников ИС-22</h2>
         <p>Выберите вашу роль:</p>
         <div class="role-buttons">
-            <button class="role-btn" onclick="selectRole('starosta')">⭐ Староста</button>
-            <button class="role-btn" onclick="selectRole('student')">📚 Учащийся</button>
+            <button class="role-btn" onclick="selectRole(this, 'starosta')">⭐ Староста</button>
+            <button class="role-btn" onclick="selectRole(this, 'student')">📚 Учащийся</button>
         </div>
         <input type="text" id="userNameInput" class="name-input" placeholder="Введите ваше имя...">
         <button class="btn-primary" onclick="login()" style="margin-top:1rem; width:100%;">Войти</button>
@@ -735,6 +735,16 @@
         toast.style.background = isError ? '#dc2626' : '#212529';
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    // ==================== ВЫБОР РОЛИ (ИСПРАВЛЕНО) ====================
+    function selectRole(btn, role) {
+        selectedRole = role;
+        const btns = document.querySelectorAll('.role-btn');
+        for (let i = 0; i < btns.length; i++) {
+            btns[i].classList.remove('selected');
+        }
+        btn.classList.add('selected');
     }
 
     // ==================== ПРЕВЬЮ ФОТО ====================
@@ -1104,7 +1114,7 @@
     // ==================== АДМИН-ПАНЕЛЬ ====================
     async function renderAdminPanel() {
         const alumni = await loadAlumni();
-        let alumniHtml = '<table style="width:100%; border-collapse:collapse; background:white; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);"><thead><tr style="background:#f8f9fa;"><th style="padding:0.8rem; text-align:left;">ID</th><th style="padding:0.8rem; text-align:left;">ФИО</th><th style="padding:0.8rem; text-align:left;">Дата рождения</th><th style="padding:0.8rem; text-align:left;">Телефон</th><th style="padding:0.8rem; text-align:left;"></th><tr></thead><tbody>';
+        let alumniHtml = '<table style="width:100%; border-collapse:collapse; background:white; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);"><thead><tr style="background:#f8f9fa;"><th style="padding:0.8rem; text-align:left;">ID</th><th style="padding:0.8rem; text-align:left;">ФИО</th><th style="padding:0.8rem; text-align:left;">Дата рождения</th><th style="padding:0.8rem; text-align:left;">Телефон</th><th style="padding:0.8rem; text-align:left;"></th></tr></thead><tbody>';
         for (let i = 0; i < alumni.length; i++) {
             const a = alumni[i];
             alumniHtml += `<tr>
@@ -1265,15 +1275,6 @@
     });
 
     // ==================== АВТОРИЗАЦИЯ ====================
-    function selectRole(role) {
-        selectedRole = role;
-        const btns = document.querySelectorAll('.role-btn');
-        for (let i = 0; i < btns.length; i++) {
-            btns[i].classList.remove('selected');
-        }
-        event.target.classList.add('selected');
-    }
-    
     function showAddAlumniModal() {
         document.getElementById('alumniModalTitle').textContent = '➕ Добавить выпускника';
         document.getElementById('alumniEditId').value = '';
