@@ -1051,12 +1051,7 @@
         let html = '';
         for (let i = 0; i < alumni.length; i++) {
             const a = alumni[i];
-            let formattedDate = '';
-            if (a.birth_date) {
-                const parts = a.birth_date.split('-');
-                formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
-            }
-            html += `
+         let formattedDate = a.birth_date ? a.birth_date.split('-').reverse().join('.') : 'дата не указана';            html += `
                 <div style="background:white; border-radius:1.5rem; padding:1.5rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid #eef2f6;">
                     <div style="font-size:3rem;">🎓</div>
                     <h4 style="color:#212529;">${escapeHtml(a.name)}</h4>
