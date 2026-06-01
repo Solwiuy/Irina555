@@ -172,6 +172,25 @@
         return true;
     }
 
+    // Админ удаляет анкету выпускника
+    function deleteGraduate(gradId, userId) {
+        // Удаляем анкету
+        let grads = JSON.parse(localStorage.getItem('graduates'));
+        grads = grads.filter(g => g.id !== gradId);
+        localStorage.setItem('graduates', JSON.stringify(grads));
+        
+        // Удаляем пользователя
+        let users = JSON.parse(localStorage.getItem('users'));
+        users = users.filter(u => u.id !== userId);
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        // Если удалили текущего пользователя - выходим
+        if (currentUser && currentUser.id === userId) {
+            logoutUser();
+        }
+        return true;
+    }
+
     function logoutUser() {
         localStorage.removeItem('currentUser');
         currentUser = null;
@@ -243,7 +262,7 @@
                         <h4>${escapeHtml(n.title)}</h4>
                         <div class="text-muted small mb-2">📅 ${n.date}</div>
                         <p>${escapeHtml(n.content)}</p>
-                        ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteAndRefresh(${n.id})"><i class="fas fa-trash"></i> Удалить</button>` : ''}
+                        ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteAndRefreshNews(${n.id})"><i class="fas fa-trash"></i> Удалить</button>` : ''}
                     </div>
                 </div>
             `;
@@ -278,7 +297,8 @@
                             <p class="mb-1"><strong>Группа:</strong> ${escapeHtml(g.group || 'Не указана')}</p>
                             <p class="small">🎓 ${g.year || '—'}</p>
                             <hr>
-                            <a href="mailto:${g.contact}" class="btn btn-sm btn-outline-secondary">Связаться</a>
+                            <a href="mailto:${g.contact}" class="btn btn-sm btn-outline-secondary me-2">Связаться</a>
+                            ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteGraduateAndRefresh(${g.id}, ${g.user_id})"><i class="fas fa-trash"></i> Удалить</button>` : ''}
                         </div>
                     </div>
                 </div>
@@ -389,9 +409,20 @@
         }
     };
 
-    window.deleteAndRefresh = function(id) {
+    window.deleteAndRefreshNews = function(id) {
         deleteNewsItem(id);
         renderNewsPage();
+    };
+
+    window.deleteGraduateAndRefresh = function(gradId, userId) {
+        if (confirm('Удалить анкету выпускника и его аккаунт?')) {
+            deleteGraduate(gradId, userId);
+            renderGraduatesPage();
+            if (currentUser && currentUser.id === userId) {
+                logoutUser();
+                showPage('home');
+            }
+        }
     };
 
     window.createNewsAndRefresh = function() {
