@@ -48,7 +48,6 @@
     <div class="container">
         <h1>Портал выпускных групп</h1>
         <p class="lead">Общайся, делись успехами, будь в курсе новостей</p>
-        <button class="btn btn-accent btn-lg" onclick="showPage('graduates')">Смотреть выпускников</button>
     </div>
 </div>
 
@@ -79,8 +78,7 @@
     }
 
     if (!localStorage.getItem('graduates')) {
-        const defaultGrads = [];
-        localStorage.setItem('graduates', JSON.stringify(defaultGrads));
+        localStorage.setItem('graduates', JSON.stringify([]));
     }
 
     let currentUser = null;
