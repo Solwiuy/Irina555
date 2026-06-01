@@ -2,726 +2,451 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Портал выпускников ИС-22</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портал выпускников | ИСП-22</title>
+    <!-- Bootstrap 5 + иконки -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-
         body {
-            background: #f8f9fa;
-            min-height: 100vh;
+            background-color: #F8F9FA;
+            font-family: 'Segoe UI', Roboto, sans-serif;
         }
-
-        .header {
-            background: white;
-            color: #1e3c5c;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            border-bottom: 1px solid #e2e8f0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+        /* Навигация */
+        .navbar-custom {
+            background-color: #0B3B5F;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
-        .header-content {
-            max-width: 1300px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            font-size: 1.3rem;
-            font-weight: 700;
-            background: #f1f3f5;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
-            color: #1e3c5c;
-        }
-
-        .nav-menu {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .nav-btn {
-            background: transparent;
-            border: none;
-            color: #4a5568;
-            padding: 0.5rem 1.2rem;
-            border-radius: 2rem;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .nav-btn:hover {
-            background: #e9ecef;
-            color: #1e3c5c;
-        }
-
-        .nav-btn.active {
-            background: #1e3c5c;
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
             color: white;
-        }
-
-        .main {
-            max-width: 1300px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .post-card {
-            background: white;
-            border-radius: 1.5rem;
-            margin-bottom: 2rem;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            border: 1px solid #eef2f6;
-        }
-
-        .post-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.08);
-        }
-
-        .post-image {
-            width: 100%;
-            background: #f8f9fa;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            max-height: 400px;
-            overflow: hidden;
-        }
-
-        .post-image img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .post-image .no-image {
-            padding: 50px;
-            font-size: 3rem;
-            text-align: center;
-            color: #adb5bd;
-        }
-
-        .post-content {
-            padding: 1.5rem;
-        }
-
-        .post-category {
-            display: inline-block;
-            background: #e9ecef;
-            color: #1e3c5c;
-            padding: 0.25rem 1rem;
-            border-radius: 2rem;
-            font-size: 0.7rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .post-title {
-            font-size: 1.4rem;
-            color: #212529;
-            margin-bottom: 0.75rem;
-            cursor: pointer;
-            font-weight: 700;
-        }
-
-        .post-title:hover {
-            color: #1e3c5c;
-        }
-
-        .post-excerpt {
-            color: #495057;
-            line-height: 1.5;
-            margin-bottom: 1rem;
-        }
-
-        .post-meta {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.8rem;
-            color: #868e96;
-            border-top: 1px solid #eef2f6;
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .btn-primary {
-            background: #1e3c5c;
-            color: white;
-            border: none;
-            padding: 0.6rem 1.5rem;
-            border-radius: 2rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            background: #2a4a6e;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #1e3c5c;
-            border: 1px solid #1e3c5c;
-            padding: 0.4rem 1rem;
-            border-radius: 2rem;
-            cursor: pointer;
-        }
-
-        .btn-danger {
-            background: #fff5f5;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            cursor: pointer;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-            color: white;
-        }
-
-        .btn-warning {
-            background: #fff3e3;
-            color: #f59e0b;
-            border: 1px solid #ffe0b3;
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-
-        .btn-warning:hover {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .btn-comment {
-            background: #e9ecef;
-            color: #1e3c5c;
-            border: none;
-            padding: 0.4rem 1rem;
-            border-radius: 2rem;
             font-weight: 500;
-            cursor: pointer;
         }
-
-        .btn-comment:hover {
-            background: #dee2e6;
+        .navbar-custom .nav-link:hover {
+            color: #FF8C42;
         }
-
-        .btn-delete-post {
-            background: #fff5f5;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            font-size: 0.8rem;
-            cursor: pointer;
-        }
-
-        .btn-delete-post:hover {
-            background: #dc2626;
-            color: white;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            max-width: 550px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .modal-content h3 {
-            color: #212529;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-content input,
-        .modal-content textarea,
-        .modal-content select {
-            width: 100%;
-            padding: 0.7rem;
-            margin-bottom: 1rem;
-            border: 1px solid #dee2e6;
-            border-radius: 1rem;
-            font-size: 0.95rem;
-        }
-
-        .modal-content input:focus,
-        .modal-content textarea:focus {
-            outline: none;
-            border-color: #1e3c5c;
-        }
-
-        .modal-content input[type="file"] {
-            padding: 0.5rem;
-            background: #f8f9fa;
-        }
-
-        .image-preview {
-            margin: 0.5rem 0 1rem;
-            max-width: 100%;
-            border-radius: 1rem;
-            display: none;
-        }
-
-        .image-preview.show {
-            display: block;
-        }
-
-        .image-preview img {
-            width: 100%;
-            border-radius: 1rem;
-            max-height: 200px;
-            object-fit: cover;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 0.7rem;
-            border-radius: 2rem;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .modal-buttons button[type="submit"] {
-            background: #1e3c5c;
+        /* Акцентная кнопка */
+        .btn-accent {
+            background-color: #FF8C42;
             color: white;
             border: none;
+            transition: 0.2s;
         }
-
-        .modal-buttons button[type="button"] {
-            background: #f1f3f5;
+        .btn-accent:hover {
+            background-color: #e07a2c;
+            color: white;
+            transform: translateY(-2px);
+        }
+        /* Герой-блок */
+        .hero {
+            background: linear-gradient(135deg, #0B3B5F 0%, #1a5a8a 100%);
+            color: white;
+            padding: 60px 0;
+            margin-bottom: 40px;
+            border-radius: 0 0 30px 30px;
+            text-align: center;
+        }
+        /* Карточки */
+        .card-news, .card-graduate {
             border: none;
-        }
-
-        .login-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+            border-radius: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             height: 100%;
-            background: linear-gradient(135deg, #e9edf2 0%, #f5f7fa 100%);
+        }
+        .card-news:hover, .card-graduate:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+        }
+        /* Аватар заглушка */
+        .avatar-placeholder {
+            width: 90px;
+            height: 90px;
+            background-color: #e9ecef;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 2000;
+            margin: 0 auto 12px;
+            font-size: 40px;
+            color: #0B3B5F;
         }
-
-        .login-box {
-            background: white;
-            padding: 2rem;
-            border-radius: 1.5rem;
-            max-width: 350px;
-            width: 90%;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .login-box h2 {
-            color: #1e3c5c;
-            margin-bottom: 1rem;
-            font-size: 1.3rem;
-        }
-
-        .role-buttons {
-            display: flex;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
-
-        .role-btn {
-            flex: 1;
-            padding: 0.8rem;
-            border: 2px solid #dee2e6;
-            background: white;
-            border-radius: 1rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .role-btn:hover {
-            border-color: #1e3c5c;
-        }
-
-        .role-btn.selected {
-            background: #1e3c5c;
+        /* Админ бейдж */
+        .admin-badge {
+            background-color: #FF8C42;
             color: white;
-            border-color: #1e3c5c;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 30px;
+            margin-left: 6px;
         }
-
-        .name-input {
-            width: 100%;
-            padding: 0.7rem;
-            border: 1px solid #dee2e6;
-            border-radius: 1rem;
-            font-size: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #212529;
+        footer {
+            background-color: #0B3B5F;
             color: white;
-            padding: 0.7rem 1.5rem;
-            border-radius: 2rem;
-            display: none;
-            z-index: 1001;
-            font-size: 0.9rem;
+            padding: 30px 0;
+            margin-top: 50px;
         }
-
-        .toast.show {
-            display: block;
-        }
-
-        .footer {
-            background: white;
-            color: #6c757d;
-            padding: 1.5rem;
-            text-align: center;
-            margin-top: 2rem;
-            font-size: 0.8rem;
-            border-top: 1px solid #eef2f6;
-        }
-
-        .event-card {
-            background: white;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid #f59e0b;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .event-content {
-            flex: 1;
-        }
-
-        .event-content h3 {
-            color: #212529;
-            margin-bottom: 0.5rem;
-        }
-
-        .event-content p {
-            color: #495057;
-            margin: 0.3rem 0;
-        }
-
-        .event-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .comment-item {
-            border-bottom: 1px solid #eef2f6;
-            padding: 0.8rem 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
-        .comment-content {
-            flex: 1;
-        }
-
-        .comment-content strong {
-            color: #212529;
-        }
-
-        .comment-content small {
-            color: #6c757d;
-            font-size: 0.7rem;
-            margin-left: 0.5rem;
-        }
-
-        .comment-content p {
-            margin-top: 0.3rem;
-            color: #495057;
-        }
-
-        .delete-comment-btn {
-            background: #fff5f5;
-            color: #dc2626;
-            border: 1px solid #fecaca;
-            padding: 0.2rem 0.6rem;
-            border-radius: 2rem;
-            font-size: 0.7rem;
-            cursor: pointer;
-        }
-
-        .delete-comment-btn:hover {
-            background: #dc2626;
-            color: white;
-        }
-
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: column;
-            }
-            .main {
-                padding: 0 1rem;
-            }
-            .post-meta {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .event-card {
-                flex-direction: column;
-            }
-            .event-actions {
-                width: 100%;
-                justify-content: flex-end;
-            }
-            .comment-item {
-                flex-direction: column;
-            }
-            .delete-comment-btn {
-                align-self: flex-end;
-            }
+            .hero h1 { font-size: 28px; }
+            .hero p { font-size: 16px; }
         }
     </style>
 </head>
 <body>
 
-<!-- ЭКРАН ВХОДА -->
-<div class="login-screen" id="loginScreen">
-    <div class="login-box">
-        <h2>🎓 Портал выпускников ИС-22</h2>
-        <p>Выберите вашу роль:</p>
-        <div class="role-buttons">
-            <button class="role-btn" id="starostaBtn">⭐ Староста</button>
-            <button class="role-btn" id="studentBtn">📚 Учащийся</button>
+<!-- ======================= НАВИГАЦИЯ ======================= -->
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#" onclick="showPage('home'); return false;">
+            <i class="fas fa-graduation-cap me-2"></i>Выпускной портал
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('home'); return false;">Главная</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('news'); return false;">Новости</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('graduates'); return false;">Выпускники</a></li>
+                <li class="nav-item" id="authNavBtn"><a class="nav-link" href="#" onclick="showPage('login'); return false;">Вход</a></li>
+                <li class="nav-item" id="userWelcomeNav" style="display: none;">
+                    <a class="nav-link" href="#" id="userNameSpan"></a>
+                </li>
+                <li class="nav-item" id="logoutBtnNav" style="display: none;">
+                    <a class="nav-link" href="#" onclick="logoutUser(); return false;">Выйти</a>
+                </li>
+            </ul>
         </div>
-        <input type="text" id="userNameInput" class="name-input" placeholder="Введите ваше имя...">
-        <button class="btn-primary" id="loginBtn" style="margin-top:1rem; width:100%;">Войти</button>
+    </div>
+</nav>
+
+<!-- Герой-баннер -->
+<div class="hero">
+    <div class="container">
+        <h1>Портал выпускных групп</h1>
+        <p class="lead">Общайся, делись успехами, будь в курсе новостей колледжа</p>
+        <button class="btn btn-accent btn-lg" onclick="showPage('graduates')">Смотреть выпускников</button>
     </div>
 </div>
 
-<!-- ОСНОВНОЙ КОНТЕНТ -->
-<div id="mainContent" style="display:none;">
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <span>🎓</span>
-                <span>Портал выпускников ИС-22</span>
-            </div>
-            <div class="nav-menu">
-                <button class="nav-btn active" data-section="feed">📰 Лента</button>
-                <button class="nav-btn" data-section="alumni">🎓 Выпускники</button>
-                <button class="nav-btn" data-section="events">📅 Мероприятия</button>
-                <button class="nav-btn" id="adminNavBtn" style="display:none;" data-section="adminPanel">⚙️ Админ</button>
-            </div>
-            <div style="display:flex; align-items:center; gap:1rem;">
-                <span id="currentUserDisplay" style="color:#212529;"></span>
-                <button class="btn-secondary" id="logoutBtn">Выйти</button>
-            </div>
-        </div>
-    </header>
-
-    <main class="main">
-        <div id="feedSection">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
-                <h2 style="color:#212529;">📰 Лента новостей</h2>
-                <button class="btn-primary" id="addPostBtn">+ Написать пост</button>
-            </div>
-            <div id="postsList"></div>
-        </div>
-
-        <div id="alumniSection" style="display:none;">
-            <h2 style="color:#212529; margin-bottom:1rem;">🎓 Наши выпускники</h2>
-            <div id="alumniList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:1rem;"></div>
-        </div>
-
-        <div id="eventsSection" style="display:none;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-                <h2 style="color:#212529;">📅 Мероприятия</h2>
-                <button class="btn-primary" id="addEventBtn" style="display:none;">+ Создать мероприятие</button>
-            </div>
-            <div id="eventsList"></div>
-        </div>
-
-        <div id="adminPanelSection" style="display:none;">
-            <h2 style="color:#212529; margin-bottom:1rem;">⚙️ Админ-панель (Староста)</h2>
-            <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
-                <button class="btn-primary" id="showAddAlumniBtn">+ Добавить выпускника</button>
-            </div>
-            <h3 style="color:#212529;">👥 Список выпускников</h3>
-            <div id="alumniTable" style="overflow-x:auto;"></div>
-            <h3 style="color:#212529; margin-top:1.5rem;">📝 Все посты</h3>
-            <div id="adminPostsList"></div>
-        </div>
-    </main>
-
-    <footer class="footer">
-        <p>Черемховский горнотехнический колледж им. М.И. Щадова | Группа ИС-22</p>
-        <p>Дипломный проект | CMS портала выпускников</p>
-    </footer>
+<!-- Динамическая область контента -->
+<div class="container" id="dynamicContent">
+    <!-- сюда подгружаются страницы через JS -->
 </div>
 
-<!-- Модалка поста -->
-<div class="modal" id="postModal">
-    <div class="modal-content">
-        <h3 id="postModalTitle">➕ Создать пост</h3>
-        <form id="postForm">
-            <input type="hidden" id="postEditId" value="">
-            <input type="text" id="postTitle" placeholder="Заголовок *" required>
-            <select id="postCategory" required>
-                <option value="">Выберите категорию</option>
-                <option value="news">Новости</option>
-                <option value="article">Статьи</option>
-                <option value="event">Мероприятия</option>
-            </select>
-            <textarea id="postContent" rows="6" placeholder="Содержание *" required></textarea>
-            <input type="text" id="postExcerpt" placeholder="Краткое описание">
-            
-            <label style="font-weight:500;">📸 Добавить фото:</label>
-            <input type="file" id="postImageFile" accept="image/*">
-            <div id="imagePreview" class="image-preview"></div>
-            <input type="hidden" id="postImageData">
-            
-            <div class="modal-buttons">
-                <button type="submit">Сохранить</button>
-                <button type="button" id="closePostModalBtn">Отмена</button>
-            </div>
-        </form>
+<!-- Футер -->
+<footer>
+    <div class="container text-center">
+        <p>&copy; 2026 Портал выпускников. Колледж, группа ИСП-22</p>
+        <p><i class="fas fa-envelope me-2"></i> support@vipusk-portal.ru</p>
     </div>
-</div>
+</footer>
 
-<!-- Модалка выпускника -->
-<div class="modal" id="alumniModal">
-    <div class="modal-content">
-        <h3 id="alumniModalTitle">➕ Добавить выпускника</h3>
-        <form id="alumniForm">
-            <input type="hidden" id="alumniEditId" value="">
-            <input type="text" id="alumniName" placeholder="ФИО *" required>
-            <label style="font-size:0.8rem; color:#6c757d;">Дата рождения:</label>
-            <input type="date" id="alumniBirthDate">
-            <input type="tel" id="alumniPhone" placeholder="Телефон">
-            <div class="modal-buttons">
-                <button type="submit">Сохранить</button>
-                <button type="button" id="closeAlumniModalBtn">Отмена</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Модалка мероприятия -->
-<div class="modal" id="eventModal">
-    <div class="modal-content">
-        <h3 id="eventModalTitle">➕ Создать мероприятие</h3>
-        <form id="eventForm">
-            <input type="hidden" id="eventEditId" value="">
-            <input type="text" id="eventTitle" placeholder="Название *" required>
-            <textarea id="eventDescription" rows="3" placeholder="Описание"></textarea>
-            <input type="date" id="eventDate" required>
-            <input type="text" id="eventLocation" placeholder="Место">
-            <div class="modal-buttons">
-                <button type="submit">Сохранить</button>
-                <button type="button" id="closeEventModalBtn">Отмена</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Модалка просмотра поста -->
-<div class="modal" id="viewPostModal">
-    <div class="modal-content" style="max-width:700px;">
-        <h3 id="viewPostTitle" style="color:#212529;"></h3>
-        <div id="viewPostMeta" style="color:#6c757d; font-size:0.85rem; margin-bottom:1rem;"></div>
-        <div id="viewPostImage" style="margin-bottom:1rem;"></div>
-        <div id="viewPostContent" style="line-height:1.7; color:#212529;"></div>
-        <hr style="margin:1.5rem 0; border-color:#eef2f6;">
-        <h4 style="color:#212529;">💬 Комментарии</h4>
-        <div id="viewCommentsList" style="margin:1rem 0; max-height:300px; overflow-y:auto;"></div>
-        
-        <p style="font-weight:500; margin-bottom:0.5rem;">📝 Написать комментарий:</p>
-        <textarea id="newCommentContent" rows="2" placeholder="Написать комментарий..." style="width:100%; padding:0.7rem; border-radius:1rem; border:1px solid #dee2e6;"></textarea>
-        <button class="btn-primary" id="sendCommentBtn">Отправить</button>
-        
-        <div class="modal-buttons" style="margin-top:1rem;">
-            <button type="button" id="closeViewPostModalBtn">Закрыть</button>
-        </div>
-    </div>
-</div>
-
-<div class="toast" id="toast">Готово</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ==================== ПОДКЛЮЧЕНИЕ К ТВОЕЙ SUPABASE ====================
-    const SUPABASE_URL = 'https://adezgrsqixyyraokvmch.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_Ous-e7hlQ9tI9DpSU7Qr8w_Bs_Z9RdH';
-    
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-    
-    // ==================== ПЕРЕМЕННЫЕ ====================
-    let currentUser = null;
-    let selectedRole = null;
+    // ------------------- 1. ИНИЦИАЛИЗАЦИЯ ДАННЫХ (localStorage) -------------------
+    if (!localStorage.getItem('users')) {
+        const defaultUsers = [
+            { id: 1, email: 'admin@portal.ru', password: 'admin123', role: 'admin', full_name: 'Админ Колледжа' },
+            { id: 2, email: 'student@portal.ru', password: 'student123', role: 'user', full_name: 'Анна Смирнова' }
+        ];
+        localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
 
-    function escapeHtml(unsafe) {
-        if (!unsafe) return '';
-        return String(unsafe).replace(/[&<>]/g, function(m) {
+    if (!localStorage.getItem('news')) {
+        const defaultNews = [
+            { id: 1, title: '🔥 Стажировка в IT-компании', content: 'Приглашаем выпускников на оплачиваемую стажировку. Срок подачи до 20 июня.', date: '2026-05-25', image: '' },
+            { id: 2, title: 'День карьеры 2026', content: '15 июня в колледже пройдёт ярмарка вакансий. Участвуют 10+ компаний.', date: '2026-05-20', image: '' },
+            { id: 3, title: 'Встреча выпускников', content: 'Приходите 30 июня на ежегодную встречу. Будет много приятных сюрпризов.', date: '2026-05-18', image: '' }
+        ];
+        localStorage.setItem('news', JSON.stringify(defaultNews));
+    }
+
+    if (!localStorage.getItem('graduates')) {
+        const defaultGrads = [
+            { id: 1, full_name: 'Иванов Иван', specialty: 'Программист', year: 2024, job: 'ООО "Ромашка"', contact: 'ivan@mail.ru', avatar: '' },
+            { id: 2, full_name: 'Петрова Анна', specialty: 'Дизайнер', year: 2023, job: 'Студия "Арт"', contact: 'anna@mail.ru', avatar: '' },
+            { id: 3, full_name: 'Сидоров Алексей', specialty: 'Системный администратор', year: 2024, job: 'ГБОУ Колледж', contact: 'alex@mail.ru', avatar: '' }
+        ];
+        localStorage.setItem('graduates', JSON.stringify(defaultGrads));
+    }
+
+    // Текущий сеанс
+    let currentUser = null;
+
+    // Загрузка сессии
+    function loadSession() {
+        const saved = localStorage.getItem('currentUser');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            updateNavBySession();
+        }
+    }
+
+    function updateNavBySession() {
+        if (currentUser) {
+            document.getElementById('authNavBtn').style.display = 'none';
+            document.getElementById('userWelcomeNav').style.display = 'block';
+            document.getElementById('logoutBtnNav').style.display = 'block';
+            let nameHtml = currentUser.full_name;
+            if (currentUser.role === 'admin') nameHtml += ' <span class="admin-badge">admin</span>';
+            document.getElementById('userNameSpan').innerHTML = '<i class="fas fa-user me-1"></i>' + nameHtml;
+        } else {
+            document.getElementById('authNavBtn').style.display = 'block';
+            document.getElementById('userWelcomeNav').style.display = 'none';
+            document.getElementById('logoutBtnNav').style.display = 'none';
+        }
+    }
+
+    function loginUser(email, pwd) {
+        const users = JSON.parse(localStorage.getItem('users'));
+        const found = users.find(u => u.email === email && u.password === pwd);
+        if (found) {
+            currentUser = { id: found.id, email: found.email, role: found.role, full_name: found.full_name };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateNavBySession();
+            return true;
+        }
+        return false;
+    }
+
+    function registerUser(fullName, email, pwd) {
+        let users = JSON.parse(localStorage.getItem('users'));
+        if (users.find(u => u.email === email)) return false;
+        const newId = users.length + 1;
+        const newUser = {
+            id: newId,
+            email: email,
+            password: pwd,
+            role: 'user',
+            full_name: fullName
+        };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        // добавим анкету для нового выпускника
+        let grads = JSON.parse(localStorage.getItem('graduates'));
+        const newGrad = {
+            id: grads.length + 1,
+            full_name: fullName,
+            specialty: '',
+            year: new Date().getFullYear(),
+            job: '',
+            contact: email,
+            avatar: ''
+        };
+        grads.push(newGrad);
+        localStorage.setItem('graduates', JSON.stringify(grads));
+        return true;
+    }
+
+    function logoutUser() {
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        updateNavBySession();
+        showPage('home');
+    }
+
+    // Работа с новостями
+    function addNewsItem(title, content) {
+        const newsArr = JSON.parse(localStorage.getItem('news'));
+        const newId = newsArr.length + 1;
+        const newNews = {
+            id: newId,
+            title: title,
+            content: content,
+            date: new Date().toISOString().slice(0,10),
+            image: ''
+        };
+        newsArr.unshift(newNews); // свежие сверху
+        localStorage.setItem('news', JSON.stringify(newsArr));
+        return true;
+    }
+
+    function deleteNewsItem(id) {
+        let newsArr = JSON.parse(localStorage.getItem('news'));
+        newsArr = newsArr.filter(n => n.id != id);
+        localStorage.setItem('news', JSON.stringify(newsArr));
+    }
+
+    // ---------- ОТРИСОВКА СТРАНИЦ ----------
+    const contentDiv = document.getElementById('dynamicContent');
+
+    function showPage(page) {
+        if (page === 'home') renderHome();
+        else if (page === 'news') renderNewsPage();
+        else if (page === 'graduates') renderGraduatesPage();
+        else if (page === 'login') renderLoginPage();
+        else renderHome();
+    }
+
+    function renderHome() {
+        const allNews = JSON.parse(localStorage.getItem('news'));
+        const lastThree = allNews.slice(0, 3);
+        let newsHtml = '';
+        lastThree.forEach(n => {
+            newsHtml += `
+                <div class="col-md-4">
+                    <div class="card card-news h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">${escapeHtml(n.title)}</h5>
+                            <p class="text-muted small"><i class="far fa-calendar-alt me-1"></i> ${n.date}</p>
+                            <p class="card-text">${escapeHtml(n.content.substring(0, 100))}${n.content.length > 100 ? '…' : ''}</p>
+                            <button class="btn btn-sm btn-outline-primary" onclick="alert('${escapeHtml(n.content).replace(/'/g, "\\'")}')">Подробнее</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        contentDiv.innerHTML = `
+            <div class="row">
+                <div class="col-12 mb-4"><h2>📌 Последние новости</h2></div>
+                ${newsHtml || '<p>Новостей пока нет</p>'}
+            </div>
+            <div class="text-center mt-3"><a href="#" onclick="showPage('news'); return false;" class="btn btn-accent">Все новости →</a></div>
+        `;
+    }
+
+    function renderNewsPage() {
+        const newsArr = JSON.parse(localStorage.getItem('news'));
+        let listHtml = '';
+        newsArr.forEach(n => {
+            listHtml += `
+                <div class="card mb-3 card-news">
+                    <div class="card-body">
+                        <h4>${escapeHtml(n.title)}</h4>
+                        <div class="text-muted small mb-2">📅 ${n.date}</div>
+                        <p>${escapeHtml(n.content)}</p>
+                        ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteAndRefresh(${n.id})"><i class="fas fa-trash"></i> Удалить</button>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        let addForm = '';
+        if (currentUser && currentUser.role === 'admin') {
+            addForm = `
+                <div class="card mt-4 border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">➕ Добавить новость</div>
+                    <div class="card-body">
+                        <input type="text" id="newsTitleInp" class="form-control mb-2" placeholder="Заголовок">
+                        <textarea id="newsTextInp" class="form-control mb-2" rows="3" placeholder="Текст новости"></textarea>
+                        <button class="btn btn-accent" onclick="createNewsAndRefresh()">Опубликовать</button>
+                    </div>
+                </div>
+            `;
+        }
+        contentDiv.innerHTML = `<h2>📰 Все новости</h2>${listHtml || '<p>Новостей нет</p>'}${addForm}`;
+    }
+
+    function renderGraduatesPage() {
+        const grads = JSON.parse(localStorage.getItem('graduates'));
+        let gradHtml = '';
+        grads.forEach(g => {
+            gradHtml += `
+                <div class="col-md-4 mb-4">
+                    <div class="card card-graduate text-center">
+                        <div class="card-body">
+                            <div class="avatar-placeholder"><i class="fas fa-user-graduate"></i></div>
+                            <h5 class="fw-bold">${escapeHtml(g.full_name)}</h5>
+                            <p class="text-muted mb-1">${escapeHtml(g.specialty || 'Специальность не указана')}</p>
+                            <p class="small">🎓 ${g.year || '—'}</p>
+                            <p>💼 ${escapeHtml(g.job || 'Не указано')}</p>
+                            <hr>
+                            <a href="mailto:${g.contact}" class="btn btn-sm btn-outline-secondary">Связаться</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        contentDiv.innerHTML = `
+            <h2>⭐ Наши выпускники</h2>
+            <div class="row">${gradHtml || '<p>Пока нет выпускников</p>'}</div>
+        `;
+    }
+
+    function renderLoginPage() {
+        if (currentUser) {
+            showPage('home');
+            return;
+        }
+        contentDiv.innerHTML = `
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <div class="card shadow">
+                        <div class="card-header bg-white text-center fw-bold fs-5">🔐 Вход в портал</div>
+                        <div class="card-body">
+                            <input type="email" id="loginEmail" class="form-control mb-3" placeholder="Email">
+                            <input type="password" id="loginPass" class="form-control mb-3" placeholder="Пароль">
+                            <button class="btn btn-accent w-100" onclick="doLogin()">Войти</button>
+                            <hr>
+                            <p class="text-center">Нет аккаунта? <a href="#" onclick="showRegisterFormInline(); return false;">Зарегистрироваться</a></p>
+                            <div id="registerBlock" style="display:none;">
+                                <input type="text" id="regName" class="form-control mb-2" placeholder="ФИО">
+                                <input type="email" id="regEmail" class="form-control mb-2" placeholder="Email">
+                                <input type="password" id="regPass" class="form-control mb-2" placeholder="Пароль">
+                                <button class="btn btn-outline-success w-100" onclick="doRegister()">Создать аккаунт</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.showRegisterFormInline = function() {
+        const block = document.getElementById('registerBlock');
+        if (block) block.style.display = 'block';
+    };
+
+    window.doLogin = function() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        if (loginUser(email, pass)) {
+            showPage('home');
+        } else {
+            alert('Неверный email или пароль. Пример: admin@portal.ru / admin123');
+        }
+    };
+
+    window.doRegister = function() {
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value;
+        const pwd = document.getElementById('regPass').value;
+        if (name && email && pwd) {
+            if (registerUser(name, email, pwd)) {
+                alert('Регистрация успешна! Теперь войдите.');
+                showPage('login');
+            } else {
+                alert('Пользователь с таким email уже существует');
+            }
+        } else {
+            alert('Заполните все поля');
+        }
+    };
+
+    window.deleteAndRefresh = function(id) {
+        deleteNewsItem(id);
+        renderNewsPage();
+    };
+
+    window.createNewsAndRefresh = function() {
+        const title = document.getElementById('newsTitleInp').value;
+        const content = document.getElementById('newsTextInp').value;
+        if (title && content) {
+            addNewsItem(title, content);
+            renderNewsPage();
+        } else {
+            alert('Заполните заголовок и текст');
+        }
+    };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
@@ -729,654 +454,10 @@
         });
     }
 
-    function showToast(text, isError = false) {
-        const toast = document.getElementById('toast');
-        toast.textContent = text;
-        toast.style.background = isError ? '#dc2626' : '#212529';
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 2000);
-    }
-
-    // ==================== ВЫБОР РОЛИ ====================
-    document.getElementById('starostaBtn').addEventListener('click', function() {
-        selectedRole = 'starosta';
-        document.getElementById('starostaBtn').classList.add('selected');
-        document.getElementById('studentBtn').classList.remove('selected');
-    });
-    
-    document.getElementById('studentBtn').addEventListener('click', function() {
-        selectedRole = 'student';
-        document.getElementById('studentBtn').classList.add('selected');
-        document.getElementById('starostaBtn').classList.remove('selected');
-    });
-
-    // ==================== ПРЕВЬЮ ФОТО ====================
-    document.getElementById('postImageFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                const preview = document.getElementById('imagePreview');
-                preview.innerHTML = `<img src="${ev.target.result}" alt="Превью">`;
-                preview.classList.add('show');
-                document.getElementById('postImageData').value = ev.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // ==================== ЗАГРУЗКА ДАННЫХ ИЗ SUPABASE ====================
-    async function loadPosts() {
-        const { data, error } = await supabaseClient
-            .from('posts')
-            .select('*')
-            .order('created_at_timestamp', { ascending: false });
-        if (error) {
-            console.error('Ошибка загрузки постов:', error);
-            return [];
-        }
-        return data || [];
-    }
-
-    async function loadAlumni() {
-        const { data, error } = await supabaseClient.from('alumni').select('*').order('id');
-        if (error) {
-            console.error('Ошибка загрузки выпускников:', error);
-            return [];
-        }
-        return data || [];
-    }
-
-    async function loadComments() {
-        const { data, error } = await supabaseClient.from('comments').select('*').order('id');
-        if (error) {
-            console.error('Ошибка загрузки комментариев:', error);
-            return [];
-        }
-        return data || [];
-    }
-
-    async function loadEvents() {
-        const { data, error } = await supabaseClient.from('events').select('*').order('event_date');
-        if (error) {
-            console.error('Ошибка загрузки мероприятий:', error);
-            return [];
-        }
-        return data || [];
-    }
-
-    // ==================== УДАЛЕНИЕ ====================
-    window.deletePost = async function(postId) {
-        if (!confirm('Удалить этот пост?')) return;
-        
-        await supabaseClient.from('posts').delete().eq('id', postId);
-        await supabaseClient.from('comments').delete().eq('post_id', postId);
-        
-        showToast('Пост удалён');
-        renderFeed();
-        if (currentUser && currentUser.role === 'starosta') renderAdminPanel();
-    };
-
-    window.deleteComment = async function(commentId) {
-        if (!confirm('Удалить этот комментарий?')) return;
-        
-        await supabaseClient.from('comments').delete().eq('id', commentId);
-        
-        showToast('Комментарий удалён');
-        if (window.currentViewPostId) {
-            openCommentModal(window.currentViewPostId);
-        }
-    };
-
-    window.deleteEvent = async function(eventId) {
-        if (!confirm('Удалить это мероприятие?')) return;
-        
-        await supabaseClient.from('events').delete().eq('id', eventId);
-        
-        showToast('Мероприятие удалено');
-        renderEvents();
-    };
-
-    window.deleteAlumni = async function(id) {
-        if (!confirm('Удалить выпускника?')) return;
-        
-        await supabaseClient.from('alumni').delete().eq('id', id);
-        
-        showToast('Выпускник удалён');
-        renderAdminPanel();
-        renderAlumni();
-    };
-
-    // ==================== РЕДАКТИРОВАНИЕ ====================
-    window.editPost = async function(postId) {
-        const posts = await loadPosts();
-        let post = null;
-        for (let i = 0; i < posts.length; i++) {
-            if (posts[i].id == postId) {
-                post = posts[i];
-                break;
-            }
-        }
-        if (!post) return;
-        
-        document.getElementById('postModalTitle').textContent = '✏️ Редактировать пост';
-        document.getElementById('postEditId').value = post.id;
-        document.getElementById('postTitle').value = post.title;
-        document.getElementById('postCategory').value = post.category;
-        document.getElementById('postContent').value = post.content;
-        document.getElementById('postExcerpt').value = post.excerpt || '';
-        document.getElementById('postImageData').value = post.image_data || '';
-        
-        if (post.image_data) {
-            const preview = document.getElementById('imagePreview');
-            preview.innerHTML = `<img src="${post.image_data}" alt="Превью">`;
-            preview.classList.add('show');
-        }
-        
-        document.getElementById('postModal').classList.add('show');
-    };
-
-    window.editEvent = async function(eventId) {
-        const events = await loadEvents();
-        let event = null;
-        for (let i = 0; i < events.length; i++) {
-            if (events[i].id == eventId) {
-                event = events[i];
-                break;
-            }
-        }
-        if (!event) return;
-        
-        document.getElementById('eventModalTitle').textContent = '✏️ Редактировать мероприятие';
-        document.getElementById('eventEditId').value = event.id;
-        document.getElementById('eventTitle').value = event.title;
-        document.getElementById('eventDescription').value = event.description || '';
-        document.getElementById('eventDate').value = event.event_date;
-        document.getElementById('eventLocation').value = event.location || '';
-        document.getElementById('eventModal').classList.add('show');
-    };
-
-    window.editAlumni = async function(id) {
-        const alumni = await loadAlumni();
-        let item = null;
-        for (let i = 0; i < alumni.length; i++) {
-            if (alumni[i].id == id) {
-                item = alumni[i];
-                break;
-            }
-        }
-        if (!item) return;
-        
-        document.getElementById('alumniModalTitle').textContent = '✏️ Редактировать выпускника';
-        document.getElementById('alumniEditId').value = item.id;
-        document.getElementById('alumniName').value = item.name;
-        document.getElementById('alumniBirthDate').value = item.birth_date || '';
-        document.getElementById('alumniPhone').value = item.phone || '';
-        document.getElementById('alumniModal').classList.add('show');
-    };
-
-    // ==================== ЛЕНТА ====================
-    async function renderFeed() {
-        const posts = await loadPosts();
-        const container = document.getElementById('postsList');
-        
-        if (posts.length === 0) {
-            container.innerHTML = '<div style="background:white; border-radius:1.5rem; padding:2rem; text-align:center; color:#6c757d;">Нет постов. Напишите первый!</div>';
-            return;
-        }
-        
-        let html = '';
-        for (let i = 0; i < posts.length; i++) {
-            const post = posts[i];
-            let imageHtml = '';
-            if (post.image_data && post.image_data !== 'null' && post.image_data !== '') {
-                imageHtml = `<div class="post-image"><img src="${post.image_data}" alt="Фото"></div>`;
-            } else {
-                imageHtml = `<div class="post-image"><div class="no-image">📰</div></div>`;
-            }
-            
-            let categoryName = 'Новости';
-            if (post.category === 'article') categoryName = 'Статья';
-            if (post.category === 'event') categoryName = 'Мероприятие';
-            
-            let displayDate = new Date(post.created_at).toLocaleDateString();
-            
-            html += `
-                <div class="post-card">
-                    ${imageHtml}
-                    <div class="post-content">
-                        <span class="post-category">${categoryName}</span>
-                        <h3 class="post-title" onclick="viewPost(${post.id})">${escapeHtml(post.title)}</h3>
-                        <p class="post-excerpt">${escapeHtml(post.excerpt || post.content.substring(0,150))}</p>
-                        <div class="post-meta">
-                            <span>✍️ ${escapeHtml(post.author_name)}</span>
-                            <span>📅 ${displayDate}</span>
-                            <button class="btn-warning" onclick="editPost(${post.id})">✏️ Ред.</button>
-                            <button class="btn-delete-post" onclick="deletePost(${post.id})">🗑️ Удалить</button>
-                        </div>
-                        <div style="margin-top: 1rem;">
-                            <button class="btn-comment" onclick="openCommentModal(${post.id})">💬 Оставить комментарий</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-    }
-    
-    // ==================== ОТКРЫТИЕ МОДАЛКИ КОММЕНТАРИЯ ====================
-    window.openCommentModal = async function(postId) {
-        const posts = await loadPosts();
-        let post = null;
-        for (let i = 0; i < posts.length; i++) {
-            if (posts[i].id == postId) {
-                post = posts[i];
-                break;
-            }
-        }
-        if (!post) return;
-        
-        document.getElementById('viewPostTitle').textContent = post.title;
-        let displayDate = new Date(post.created_at).toLocaleDateString();
-        document.getElementById('viewPostMeta').innerHTML = `Автор: ${escapeHtml(post.author_name)} | ${displayDate}`;
-        
-        let imageHtml = '';
-        if (post.image_data && post.image_data !== 'null' && post.image_data !== '') {
-            imageHtml = `<img src="${post.image_data}" style="width:100%; border-radius:1rem;">`;
-        }
-        document.getElementById('viewPostImage').innerHTML = imageHtml;
-        document.getElementById('viewPostContent').innerHTML = post.content;
-        
-        const comments = await loadComments();
-        let commentsHtml = '';
-        for (let i = 0; i < comments.length; i++) {
-            if (comments[i].post_id == postId) {
-                commentsHtml += `
-                    <div class="comment-item">
-                        <div class="comment-content">
-                            <strong>${escapeHtml(comments[i].user_name)}</strong>
-                            <small>${new Date(comments[i].created_at).toLocaleDateString()}</small>
-                            <p>${escapeHtml(comments[i].content)}</p>
-                        </div>
-                        <button class="delete-comment-btn" onclick="deleteComment(${comments[i].id})">🗑️</button>
-                    </div>
-                `;
-            }
-        }
-        if (commentsHtml === '') commentsHtml = '<p style="color:#6c757d;">Нет комментариев</p>';
-        document.getElementById('viewCommentsList').innerHTML = commentsHtml;
-        
-        document.getElementById('viewPostModal').classList.add('show');
-        window.currentViewPostId = postId;
-    };
-    
-    window.viewPost = function(postId) {
-        openCommentModal(postId);
-    };
-
-    document.getElementById('sendCommentBtn').addEventListener('click', async function() {
-        const content = document.getElementById('newCommentContent').value;
-        const userName = currentUser?.name || 'Гость';
-        
-        if (!content.trim()) {
-            showToast('Введите текст комментария', true);
-            return;
-        }
-        
-        const { error } = await supabaseClient.from('comments').insert([{
-            post_id: window.currentViewPostId,
-            user_name: userName,
-            content: content
-        }]);
-        
-        if (error) {
-            showToast('Ошибка добавления комментария', true);
-            return;
-        }
-        
-        showToast('Комментарий добавлен');
-        document.getElementById('newCommentContent').value = '';
-        openCommentModal(window.currentViewPostId);
-    });
-
-    // ==================== ВЫПУСКНИКИ ====================
-    async function renderAlumni() {
-        const alumni = await loadAlumni();
-        const container = document.getElementById('alumniList');
-        if (alumni.length === 0) {
-            container.innerHTML = '<div style="text-align:center; color:#6c757d;">Нет выпускников</div>';
-            return;
-        }
-        
-        let html = '';
-        for (let i = 0; i < alumni.length; i++) {
-            const a = alumni[i];
-         let formattedDate = a.birth_date ? a.birth_date.split('-').reverse().join('.') : 'дата не указана';            html += `
-                <div style="background:white; border-radius:1.5rem; padding:1.5rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.05); border:1px solid #eef2f6;">
-                    <div style="font-size:3rem;">🎓</div>
-                    <h4 style="color:#212529;">${escapeHtml(a.name)}</h4>
-                    <span style="background:#e9ecef; padding:0.2rem 0.8rem; border-radius:2rem; font-size:0.75rem; color:#495057;">${formattedDate || 'дата не указана'}</span>
-                    ${a.phone ? `<div style="margin-top:0.8rem; font-size:0.85rem; color:#1e3c5c;">📞 ${escapeHtml(a.phone)}</div>` : ''}
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-    }
-
-    // ==================== МЕРОПРИЯТИЯ ====================
-    async function renderEvents() {
-        const events = await loadEvents();
-        const container = document.getElementById('eventsList');
-        if (events.length === 0) {
-            container.innerHTML = '<div style="background:white; border-radius:1.5rem; padding:2rem; text-align:center; color:#6c757d;">Нет мероприятий</div>';
-            return;
-        }
-        
-        let html = '';
-        for (let i = 0; i < events.length; i++) {
-            const e = events[i];
-            html += `
-                <div class="event-card">
-                    <div class="event-content">
-                        <h3>📅 ${escapeHtml(e.title)}</h3>
-                        <p><strong>📆 ${e.event_date}</strong> | 📍 ${escapeHtml(e.location || 'место не указано')}</p>
-                        <p>${escapeHtml(e.description || '')}</p>
-                    </div>
-                    <div class="event-actions">
-                        <button class="btn-warning" onclick="editEvent(${e.id})">✏️ Ред.</button>
-                        <button class="btn-danger" onclick="deleteEvent(${e.id})">🗑️ Удалить</button>
-                    </div>
-                </div>
-            `;
-        }
-        container.innerHTML = html;
-    }
-
-    // ==================== АДМИН-ПАНЕЛЬ ====================
-    async function renderAdminPanel() {
-        const alumni = await loadAlumni();
-        let alumniHtml = '<table style="width:100%; border-collapse:collapse; background:white; border-radius:1rem; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);"><thead><tr style="background:#f8f9fa;"><th style="padding:0.8rem; text-align:left;">ID</th><th style="padding:0.8rem; text-align:left;">ФИО</th><th style="padding:0.8rem; text-align:left;">Дата рождения</th><th style="padding:0.8rem; text-align:left;">Телефон</th><th style="padding:0.8rem; text-align:left;"></th><tr></thead><tbody>';
-        for (let i = 0; i < alumni.length; i++) {
-            const a = alumni[i];
-            alumniHtml += `<tr>
-                <td style="padding:0.8rem;">${a.id}</td>
-                <td style="padding:0.8rem;">${escapeHtml(a.name)}</td>
-                <td style="padding:0.8rem;">${a.birth_date || '-'}</td>
-                <td style="padding:0.8rem;">${escapeHtml(a.phone || '-')}</td>
-                <td style="padding:0.8rem;"><button class="btn-warning" onclick="editAlumni(${a.id})">✏️</button> <button class="btn-danger" onclick="deleteAlumni(${a.id})">🗑️</button></td>
-            </tr>`;
-        }
-        alumniHtml += '</tbody></tr>';
-        document.getElementById('alumniTable').innerHTML = alumniHtml;
-        
-        const posts = await loadPosts();
-        let postsHtml = '';
-        for (let i = 0; i < posts.length; i++) {
-            const p = posts[i];
-            let displayDate = new Date(p.created_at).toLocaleDateString();
-            postsHtml += `
-                <div style="background:#f8f9fa; border-radius:1rem; padding:1rem; margin-bottom:0.8rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-                    <div><strong style="color:#212529;">${escapeHtml(p.title)}</strong><br><small style="color:#6c757d;">Автор: ${escapeHtml(p.author_name)} | ${displayDate}</small></div>
-                    <div>
-                        <button class="btn-warning" onclick="editPost(${p.id})">✏️ Ред.</button>
-                        <button class="btn-danger" onclick="deletePost(${p.id})">🗑️ Удалить</button>
-                    </div>
-                </div>
-            `;
-        }
-        document.getElementById('adminPostsList').innerHTML = postsHtml || '<p style="color:#6c757d;">Нет постов</p>';
-    }
-
-    // ==================== СОЗДАНИЕ ПОСТА ====================
-    document.getElementById('postForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const editId = document.getElementById('postEditId').value;
-        const title = document.getElementById('postTitle').value;
-        const category = document.getElementById('postCategory').value;
-        const content = document.getElementById('postContent').value;
-        const excerpt = document.getElementById('postExcerpt').value;
-        const imageData = document.getElementById('postImageData').value;
-        
-        if (!title || !category || !content) {
-            showToast('Заполните все обязательные поля', true);
-            return;
-        }
-        
-        if (!currentUser) {
-            showToast('Ошибка: пользователь не авторизован', true);
-            return;
-        }
-        
-        const postData = {
-            title: title,
-            category: category,
-            content: content,
-            excerpt: excerpt || content.substring(0,150),
-            image_data: imageData || null,
-            author_name: currentUser.name,
-            author_role: currentUser.role,
-            created_at_timestamp: Date.now()
-        };
-        
-        if (editId && editId !== '') {
-            await supabaseClient.from('posts').update(postData).eq('id', editId);
-            showToast('Пост обновлён!');
-        } else {
-            await supabaseClient.from('posts').insert([postData]);
-            showToast('Пост создан!');
-        }
-        
-        document.getElementById('postModal').classList.remove('show');
-        document.getElementById('postForm').reset();
-        document.getElementById('postEditId').value = '';
-        document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('imagePreview').classList.remove('show');
-        document.getElementById('postImageData').value = '';
-        
-        renderFeed();
-        if (currentUser.role === 'starosta') renderAdminPanel();
-    });
-
-    // ==================== СОЗДАНИЕ/РЕДАКТИРОВАНИЕ ВЫПУСКНИКА ====================
-    document.getElementById('alumniForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const editId = document.getElementById('alumniEditId').value;
-        
-        const alumniData = {
-            name: document.getElementById('alumniName').value,
-            birth_date: document.getElementById('alumniBirthDate').value,
-            phone: document.getElementById('alumniPhone').value
-        };
-        
-        if (editId && editId !== '') {
-            await supabaseClient.from('alumni').update(alumniData).eq('id', editId);
-            showToast('Выпускник обновлён');
-        } else {
-            await supabaseClient.from('alumni').insert([alumniData]);
-            showToast('Выпускник добавлен');
-        }
-        
-        document.getElementById('alumniModal').classList.remove('show');
-        document.getElementById('alumniForm').reset();
-        document.getElementById('alumniEditId').value = '';
-        renderAdminPanel();
-        renderAlumni();
-    });
-
-    // ==================== СОЗДАНИЕ/РЕДАКТИРОВАНИЕ МЕРОПРИЯТИЯ ====================
-    document.getElementById('eventForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const editId = document.getElementById('eventEditId').value;
-        
-        const eventData = {
-            title: document.getElementById('eventTitle').value,
-            description: document.getElementById('eventDescription').value,
-            event_date: document.getElementById('eventDate').value,
-            location: document.getElementById('eventLocation').value,
-            created_by: currentUser?.name || 'Админ'
-        };
-        
-        if (editId && editId !== '') {
-            await supabaseClient.from('events').update(eventData).eq('id', editId);
-            showToast('Мероприятие обновлено');
-        } else {
-            await supabaseClient.from('events').insert([eventData]);
-            showToast('Мероприятие создано');
-        }
-        
-        document.getElementById('eventModal').classList.remove('show');
-        document.getElementById('eventForm').reset();
-        document.getElementById('eventEditId').value = '';
-        renderEvents();
-    });
-
-    // ==================== АВТОРИЗАЦИЯ ====================
-    document.getElementById('showAddAlumniBtn').addEventListener('click', function() {
-        document.getElementById('alumniModalTitle').textContent = '➕ Добавить выпускника';
-        document.getElementById('alumniEditId').value = '';
-        document.getElementById('alumniName').value = '';
-        document.getElementById('alumniBirthDate').value = '';
-        document.getElementById('alumniPhone').value = '';
-        document.getElementById('alumniModal').classList.add('show');
-    });
-    
-    document.getElementById('loginBtn').addEventListener('click', async function() {
-        const userName = document.getElementById('userNameInput').value.trim();
-        if (!userName) {
-            showToast('Введите ваше имя', true);
-            return;
-        }
-        if (!selectedRole) {
-            showToast('Выберите роль', true);
-            return;
-        }
-        
-        currentUser = {
-            name: userName,
-            role: selectedRole
-        };
-        
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('mainContent').style.display = 'block';
-        document.getElementById('currentUserDisplay').innerHTML = `${selectedRole === 'starosta' ? '⭐' : '📚'} ${escapeHtml(userName)}`;
-        
-        const isStarosta = selectedRole === 'starosta';
-        const adminBtn = document.getElementById('adminNavBtn');
-        const addEventBtn = document.getElementById('addEventBtn');
-        
-        if (isStarosta) {
-            adminBtn.style.display = 'block';
-            addEventBtn.style.display = 'block';
-        } else {
-            adminBtn.style.display = 'none';
-            addEventBtn.style.display = 'none';
-        }
-        
-        await renderFeed();
-        await renderAlumni();
-        await renderEvents();
-        if (isStarosta) await renderAdminPanel();
-        
-        const activeBtn = document.querySelector('.nav-btn.active');
-        if (activeBtn) {
-            const section = activeBtn.dataset.section;
-            document.getElementById('feedSection').style.display = section === 'feed' ? 'block' : 'none';
-            document.getElementById('alumniSection').style.display = section === 'alumni' ? 'block' : 'none';
-            document.getElementById('eventsSection').style.display = section === 'events' ? 'block' : 'none';
-            document.getElementById('adminPanelSection').style.display = section === 'adminPanel' ? 'block' : 'none';
-        }
-    });
-    
-    document.getElementById('logoutBtn').addEventListener('click', function() {
-        currentUser = null;
-        selectedRole = null;
-        document.getElementById('loginScreen').style.display = 'flex';
-        document.getElementById('mainContent').style.display = 'none';
-        document.getElementById('userNameInput').value = '';
-        document.getElementById('starostaBtn').classList.remove('selected');
-        document.getElementById('studentBtn').classList.remove('selected');
-    });
-
-    // ==================== НАВИГАЦИЯ ====================
-    const navBtns = document.querySelectorAll('.nav-btn');
-    for (let i = 0; i < navBtns.length; i++) {
-        navBtns[i].addEventListener('click', function() {
-            for (let j = 0; j < navBtns.length; j++) {
-                navBtns[j].classList.remove('active');
-            }
-            this.classList.add('active');
-            
-            const section = this.dataset.section;
-            const feed = document.getElementById('feedSection');
-            const alumni = document.getElementById('alumniSection');
-            const events = document.getElementById('eventsSection');
-            const admin = document.getElementById('adminPanelSection');
-            
-            if (feed) feed.style.display = 'none';
-            if (alumni) alumni.style.display = 'none';
-            if (events) events.style.display = 'none';
-            if (admin) admin.style.display = 'none';
-            
-            if (section === 'feed') feed.style.display = 'block';
-            if (section === 'alumni') {
-                alumni.style.display = 'block';
-                renderAlumni();
-            }
-            if (section === 'events') {
-                events.style.display = 'block';
-                renderEvents();
-            }
-            if (section === 'adminPanel') {
-                admin.style.display = 'block';
-                renderAdminPanel();
-            }
-        });
-    }
-
-    // ==================== ЗАКРЫТИЕ МОДАЛОК ====================
-    document.getElementById('closePostModalBtn').addEventListener('click', () => {
-        document.getElementById('postModal').classList.remove('show');
-        document.getElementById('postForm').reset();
-        document.getElementById('postEditId').value = '';
-        document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('imagePreview').classList.remove('show');
-        document.getElementById('postImageData').value = '';
-    });
-    document.getElementById('closeAlumniModalBtn').addEventListener('click', () => {
-        document.getElementById('alumniModal').classList.remove('show');
-        document.getElementById('alumniForm').reset();
-        document.getElementById('alumniEditId').value = '';
-    });
-    document.getElementById('closeEventModalBtn').addEventListener('click', () => {
-        document.getElementById('eventModal').classList.remove('show');
-        document.getElementById('eventForm').reset();
-        document.getElementById('eventEditId').value = '';
-    });
-    document.getElementById('closeViewPostModalBtn').addEventListener('click', () => document.getElementById('viewPostModal').classList.remove('show'));
-    
-    document.getElementById('addPostBtn').addEventListener('click', () => {
-        document.getElementById('postModalTitle').textContent = '➕ Создать пост';
-        document.getElementById('postEditId').value = '';
-        document.getElementById('postTitle').value = '';
-        document.getElementById('postCategory').value = '';
-        document.getElementById('postContent').value = '';
-        document.getElementById('postExcerpt').value = '';
-        document.getElementById('postImageData').value = '';
-        document.getElementById('imagePreview').innerHTML = '';
-        document.getElementById('imagePreview').classList.remove('show');
-        document.getElementById('postModal').classList.add('show');
-    });
-    
-    document.getElementById('addEventBtn').addEventListener('click', () => {
-        document.getElementById('eventModalTitle').textContent = '➕ Создать мероприятие';
-        document.getElementById('eventEditId').value = '';
-        document.getElementById('eventTitle').value = '';
-        document.getElementById('eventDescription').value = '';
-        document.getElementById('eventDate').value = '';
-        document.getElementById('eventLocation').value = '';
-        document.getElementById('eventModal').classList.add('show');
-    });
+    // Запуск
+    loadSession();
+    showPage('home');
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
