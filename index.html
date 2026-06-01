@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портал выпускных групп</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { background-color: #F8F9FA; font-family: 'Segoe UI', Roboto, sans-serif; }
+        .navbar-custom { background-color: #0B3B5F; }
+        .navbar-custom .navbar-brand, .navbar-custom .nav-link { color: white; font-weight: 500; }
+        .navbar-custom .nav-link:hover { color: #FF8C42; }
+        .btn-accent { background-color: #FF8C42; color: white; border: none; transition: 0.2s; }
+        .btn-accent:hover { background-color: #e07a2c; transform: translateY(-2px); }
+        .hero { background: linear-gradient(135deg, #0B3B5F 0%, #1a5a8a 100%); color: white; padding: 80px 0; margin-bottom: 40px; border-radius: 0 0 30px 30px; text-align: center; }
+        .card-news, .card-graduate { border: none; border-radius: 16px; transition: 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.08); height: 100%; }
+        .card-news:hover, .card-graduate:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); }
+        .avatar-placeholder { width: 90px; height: 90px; background-color: #e9ecef; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 40px; color: #0B3B5F; }
+        .admin-badge { background-color: #FF8C42; color: white; font-size: 11px; padding: 2px 8px; border-radius: 30px; margin-left: 6px; }
+        footer { background-color: #0B3B5F; color: white; padding: 30px 0; margin-top: 50px; }
+        @media (max-width: 768px) { .hero h1 { font-size: 28px; } .hero p { font-size: 16px; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="#" onclick="showPage('home'); return false;"><i class="fas fa-graduation-cap me-2"></i>Портал выпускных групп</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('home'); return false;">Главная</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('news'); return false;">Новости</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showPage('graduates'); return false;">Выпускники</a></li>
+                <li class="nav-item" id="profileNavBtn" style="display:none;"><a class="nav-link" href="#" onclick="showPage('profile'); return false;">Мой профиль</a></li>
+                <li class="nav-item" id="authNavBtn"><a class="nav-link" href="#" onclick="showPage('login'); return false;">Вход</a></li>
+                <li class="nav-item" id="userWelcomeNav" style="display:none;"><a class="nav-link" href="#" id="userNameSpan"></a></li>
+                <li class="nav-item" id="logoutBtnNav" style="display:none;"><a class="nav-link" href="#" onclick="logoutUser(); return false;">Выйти</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="hero" id="heroBlock">
+    <div class="container">
+        <h1>Портал выпускных групп</h1>
+        <p class="lead">Общайся, делись успехами, будь в курсе новостей</p>
+        <button class="btn btn-accent btn-lg" onclick="showPage('graduates')">Смотреть выпускников</button>
+    </div>
+</div>
+
+<div class="container" id="dynamicContent"></div>
+
+<footer>
+    <div class="container text-center">
+        <p>&copy; 2026 Портал выпускных групп</p>
+        <p><i class="fas fa-envelope me-2"></i> support@vipusk-portal.ru</p>
+    </div>
+</footer>
+
+<script>
+    // ========== ИНИЦИАЛИЗАЦИЯ ==========
+    if (!localStorage.getItem('users')) {
+        const defaultUsers = [
+            { id: 1, email: 'admin@portal.ru', password: 'admin123', role: 'admin', full_name: 'Администратор' }
+        ];
+        localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
+
+    if (!localStorage.getItem('news')) {
+        const defaultNews = [
+            { id: 1, title: 'Стажировка в IT-компании', content: 'Приглашаем выпускников на оплачиваемую стажировку. Срок подачи до 20 июня.', date: '2026-05-25' },
+            { id: 2, title: 'День карьеры 2026', content: '15 июня в колледже пройдёт ярмарка вакансий. Участвуют 10+ компаний.', date: '2026-05-20' }
+        ];
+        localStorage.setItem('news', JSON.stringify(defaultNews));
+    }
+
+    if (!localStorage.getItem('graduates')) {
+        const defaultGrads = [];
+        localStorage.setItem('graduates', JSON.stringify(defaultGrads));
+    }
+
+    let currentUser = null;
+
+    function loadSession() {
+        const saved = localStorage.getItem('currentUser');
+        if (saved) {
+            currentUser = JSON.parse(saved);
+            updateNavBySession();
+        }
+    }
+
+    function updateNavBySession() {
+        if (currentUser) {
+            document.getElementById('authNavBtn').style.display = 'none';
+            document.getElementById('userWelcomeNav').style.display = 'block';
+            document.getElementById('logoutBtnNav').style.display = 'block';
+            document.getElementById('profileNavBtn').style.display = 'block';
+            let nameHtml = currentUser.full_name;
+            if (currentUser.role === 'admin') nameHtml += ' <span class="admin-badge">admin</span>';
+            document.getElementById('userNameSpan').innerHTML = '<i class="fas fa-user me-1"></i>' + nameHtml;
+        } else {
+            document.getElementById('authNavBtn').style.display = 'block';
+            document.getElementById('userWelcomeNav').style.display = 'none';
+            document.getElementById('logoutBtnNav').style.display = 'none';
+            document.getElementById('profileNavBtn').style.display = 'none';
+        }
+    }
+
+    function loginUser(email, pwd) {
+        const users = JSON.parse(localStorage.getItem('users'));
+        const found = users.find(u => u.email === email && u.password === pwd);
+        if (found) {
+            currentUser = { id: found.id, email: found.email, role: found.role, full_name: found.full_name };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateNavBySession();
+            return true;
+        }
+        return false;
+    }
+
+    function registerUser(fullName, email, pwd, group, specialty) {
+        let users = JSON.parse(localStorage.getItem('users'));
+        if (users.find(u => u.email === email)) return false;
+        const newId = users.length + 1;
+        const newUser = {
+            id: newId,
+            email: email,
+            password: pwd,
+            role: 'user',
+            full_name: fullName
+        };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        let grads = JSON.parse(localStorage.getItem('graduates'));
+        const newGrad = {
+            id: grads.length + 1,
+            user_id: newId,
+            full_name: fullName,
+            specialty: specialty || '',
+            group: group || '',
+            year: new Date().getFullYear(),
+            contact: email
+        };
+        grads.push(newGrad);
+        localStorage.setItem('graduates', JSON.stringify(grads));
+        return true;
+    }
+
+    function updateUserProfile(fullName, specialty, group, contact) {
+        let grads = JSON.parse(localStorage.getItem('graduates'));
+        const gradIndex = grads.findIndex(g => g.user_id === currentUser.id);
+        if (gradIndex !== -1) {
+            grads[gradIndex].full_name = fullName;
+            grads[gradIndex].specialty = specialty;
+            grads[gradIndex].group = group;
+            grads[gradIndex].contact = contact;
+            localStorage.setItem('graduates', JSON.stringify(grads));
+        }
+        
+        let users = JSON.parse(localStorage.getItem('users'));
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        if (userIndex !== -1) {
+            users[userIndex].full_name = fullName;
+            localStorage.setItem('users', JSON.stringify(users));
+            currentUser.full_name = fullName;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateNavBySession();
+        }
+        return true;
+    }
+
+    function logoutUser() {
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        updateNavBySession();
+        showPage('home');
+    }
+
+    function addNewsItem(title, content) {
+        const newsArr = JSON.parse(localStorage.getItem('news'));
+        const newId = newsArr.length + 1;
+        const newNews = {
+            id: newId,
+            title: title,
+            content: content,
+            date: new Date().toISOString().slice(0,10)
+        };
+        newsArr.unshift(newNews);
+        localStorage.setItem('news', JSON.stringify(newsArr));
+        return true;
+    }
+
+    function deleteNewsItem(id) {
+        let newsArr = JSON.parse(localStorage.getItem('news'));
+        newsArr = newsArr.filter(n => n.id != id);
+        localStorage.setItem('news', JSON.stringify(newsArr));
+    }
+
+    function getCurrentUserGraduate() {
+        const grads = JSON.parse(localStorage.getItem('graduates'));
+        return grads.find(g => g.user_id === currentUser?.id);
+    }
+
+    // ========== ОТРИСОВКА ==========
+    const contentDiv = document.getElementById('dynamicContent');
+    const heroBlock = document.getElementById('heroBlock');
+
+    function showPage(page) {
+        if (page === 'home') heroBlock.style.display = 'block';
+        else heroBlock.style.display = 'none';
+        
+        if (page === 'home') renderHome();
+        else if (page === 'news') renderNewsPage();
+        else if (page === 'graduates') renderGraduatesPage();
+        else if (page === 'login') renderLoginPage();
+        else if (page === 'profile') renderProfilePage();
+        else renderHome();
+    }
+
+    function renderHome() {
+        contentDiv.innerHTML = `
+            <div class="row justify-content-center">
+                <div class="col-md-8 text-center">
+                    <h2 class="mb-4">Добро пожаловать на портал выпускных групп</h2>
+                    <p class="lead mb-4">Здесь вы можете найти информацию о выпускниках, читать новости и оставаться на связи с одногруппниками.</p>
+                    <button class="btn btn-accent btn-lg me-2" onclick="showPage('graduates')">Смотреть выпускников</button>
+                    <button class="btn btn-outline-primary btn-lg" onclick="showPage('news')">Читать новости</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderNewsPage() {
+        const newsArr = JSON.parse(localStorage.getItem('news'));
+        let listHtml = '';
+        newsArr.forEach(n => {
+            listHtml += `
+                <div class="card mb-3 card-news">
+                    <div class="card-body">
+                        <h4>${escapeHtml(n.title)}</h4>
+                        <div class="text-muted small mb-2">📅 ${n.date}</div>
+                        <p>${escapeHtml(n.content)}</p>
+                        ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteAndRefresh(${n.id})"><i class="fas fa-trash"></i> Удалить</button>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        let addForm = '';
+        if (currentUser && currentUser.role === 'admin') {
+            addForm = `
+                <div class="card mt-4 border-0 shadow-sm">
+                    <div class="card-header bg-white fw-bold">➕ Добавить новость (только для админа)</div>
+                    <div class="card-body">
+                        <input type="text" id="newsTitleInp" class="form-control mb-2" placeholder="Заголовок">
+                        <textarea id="newsTextInp" class="form-control mb-2" rows="3" placeholder="Текст новости"></textarea>
+                        <button class="btn btn-accent" onclick="createNewsAndRefresh()">Опубликовать</button>
+                    </div>
+                </div>
+            `;
+        }
+        contentDiv.innerHTML = `<h2>📰 Новости</h2>${listHtml || '<p>Новостей нет</p>'}${addForm}`;
+    }
+
+    function renderGraduatesPage() {
+        const grads = JSON.parse(localStorage.getItem('graduates'));
+        let gradHtml = '';
+        grads.forEach(g => {
+            gradHtml += `
+                <div class="col-md-4 mb-4">
+                    <div class="card card-graduate text-center">
+                        <div class="card-body">
+                            <div class="avatar-placeholder"><i class="fas fa-user-graduate"></i></div>
+                            <h5 class="fw-bold">${escapeHtml(g.full_name)}</h5>
+                            <p class="text-muted mb-1">${escapeHtml(g.specialty || 'Специальность не указана')}</p>
+                            <p class="mb-1"><strong>Группа:</strong> ${escapeHtml(g.group || 'Не указана')}</p>
+                            <p class="small">🎓 ${g.year || '—'}</p>
+                            <hr>
+                            <a href="mailto:${g.contact}" class="btn btn-sm btn-outline-secondary">Связаться</a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        contentDiv.innerHTML = `<h2>⭐ Наши выпускники</h2><div class="row">${gradHtml || '<p>Пока нет выпускников. Зарегистрируйтесь, чтобы добавить свою анкету!</p>'}</div>`;
+    }
+
+    function renderProfilePage() {
+        if (!currentUser) {
+            showPage('login');
+            return;
+        }
+        const grad = getCurrentUserGraduate();
+        contentDiv.innerHTML = `
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-white text-center fw-bold fs-5">👤 Мой профиль</div>
+                        <div class="card-body">
+                            <input type="text" id="profileName" class="form-control mb-2" placeholder="ФИО" value="${escapeHtml(currentUser.full_name)}">
+                            <input type="text" id="profileSpecialty" class="form-control mb-2" placeholder="Специальность" value="${escapeHtml(grad?.specialty || '')}">
+                            <input type="text" id="profileGroup" class="form-control mb-2" placeholder="Группа" value="${escapeHtml(grad?.group || '')}">
+                            <input type="email" id="profileContact" class="form-control mb-2" placeholder="Контактный email" value="${escapeHtml(grad?.contact || currentUser.email)}">
+                            <button class="btn btn-accent w-100" onclick="saveProfile()">Сохранить изменения</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.saveProfile = function() {
+        const name = document.getElementById('profileName').value;
+        const specialty = document.getElementById('profileSpecialty').value;
+        const group = document.getElementById('profileGroup').value;
+        const contact = document.getElementById('profileContact').value;
+        if (name) {
+            updateUserProfile(name, specialty, group, contact);
+            alert('Профиль обновлён!');
+            showPage('profile');
+        } else {
+            alert('Заполните ФИО');
+        }
+    };
+
+    window.renderLoginPage = function() {
+        if (currentUser) {
+            showPage('home');
+            return;
+        }
+        contentDiv.innerHTML = `
+            <div class="row justify-content-center">
+                <div class="col-md-5">
+                    <div class="card shadow">
+                        <div class="card-header bg-white text-center fw-bold fs-5">🔐 Вход в портал</div>
+                        <div class="card-body">
+                            <input type="email" id="loginEmail" class="form-control mb-3" placeholder="Email">
+                            <input type="password" id="loginPass" class="form-control mb-3" placeholder="Пароль">
+                            <button class="btn btn-accent w-100" onclick="doLogin()">Войти</button>
+                            <hr>
+                            <p class="text-center">Нет аккаунта? <a href="#" onclick="showRegisterFormInline(); return false;">Зарегистрироваться</a></p>
+                            <div id="registerBlock" style="display:none;">
+                                <input type="text" id="regName" class="form-control mb-2" placeholder="ФИО">
+                                <input type="email" id="regEmail" class="form-control mb-2" placeholder="Email">
+                                <input type="password" id="regPass" class="form-control mb-2" placeholder="Пароль">
+                                <input type="text" id="regGroup" class="form-control mb-2" placeholder="Группа">
+                                <input type="text" id="regSpecialty" class="form-control mb-2" placeholder="Специальность">
+                                <button class="btn btn-outline-success w-100" onclick="doRegister()">Создать аккаунт</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    };
+
+    window.showRegisterFormInline = function() {
+        const block = document.getElementById('registerBlock');
+        if (block) block.style.display = 'block';
+    };
+
+    window.doLogin = function() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        if (loginUser(email, pass)) {
+            showPage('home');
+        } else {
+            alert('Неверный email или пароль. Админ: admin@portal.ru / admin123');
+        }
+    };
+
+    window.doRegister = function() {
+        const name = document.getElementById('regName').value;
+        const email = document.getElementById('regEmail').value;
+        const pwd = document.getElementById('regPass').value;
+        const group = document.getElementById('regGroup').value;
+        const specialty = document.getElementById('regSpecialty').value;
+        if (name && email && pwd) {
+            if (registerUser(name, email, pwd, group, specialty)) {
+                alert('Регистрация успешна! Теперь войдите.');
+                showPage('login');
+            } else {
+                alert('Пользователь с таким email уже существует');
+            }
+        } else {
+            alert('Заполните ФИО, Email и пароль');
+        }
+    };
+
+    window.deleteAndRefresh = function(id) {
+        deleteNewsItem(id);
+        renderNewsPage();
+    };
+
+    window.createNewsAndRefresh = function() {
+        const title = document.getElementById('newsTitleInp').value;
+        const content = document.getElementById('newsTextInp').value;
+        if (title && content) {
+            addNewsItem(title, content);
+            renderNewsPage();
+        } else {
+            alert('Заполните заголовок и текст');
+        }
+    };
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    loadSession();
+    showPage('home');
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
