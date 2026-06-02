@@ -71,18 +71,22 @@
 
     if (!localStorage.getItem('news')) {
         const defaultNews = [
-            { id: 1, title: 'Добро пожаловать на портал!', content: 'Портал выпускников успешно запущен. Здесь вы можете найти информацию о выпускниках, читать новости и оставаться на связи.', date: '2026-06-03' },
-            { id: 2, title: 'Стажировка в IT-компании', content: 'Приглашаем выпускников на оплачиваемую стажировку в крупную IT-компанию. Срок подачи до 20 июня.', date: '2026-06-02' },
-            { id: 3, title: 'День карьеры 2026', content: '15 июня в колледже пройдёт ярмарка вакансий с участием 10+ компаний. Приходите!', date: '2026-06-01' }
+            { id: 1, title: '📢 Добро пожаловать на портал!', content: 'Портал выпускников успешно запущен. Здесь вы можете найти информацию о выпускниках, читать новости и оставаться на связи.', date: '2026-06-03' },
+            { id: 2, title: '💼 Стажировка в IT-компании', content: 'Приглашаем выпускников на оплачиваемую стажировку в крупную IT-компанию. Срок подачи до 20 июня.', date: '2026-06-02' },
+            { id: 3, title: '🎉 День карьеры 2026', content: '15 июня в колледже пройдёт ярмарка вакансий с участием 10+ компаний. Приходите!', date: '2026-06-01' }
         ];
         localStorage.setItem('news', JSON.stringify(defaultNews));
     }
 
+    // 6 выпускников, как в макете
     if (!localStorage.getItem('graduates')) {
         const defaultGrads = [
             { id: 1, user_id: null, full_name: 'Иванов Иван', specialty: 'Программист', group_name: 'ИСП-21', year: 2024, contact_email: 'ivan@example.com' },
             { id: 2, user_id: null, full_name: 'Петрова Анна', specialty: 'Дизайнер', group_name: 'ДИЗ-22', year: 2024, contact_email: 'anna@example.com' },
-            { id: 3, user_id: null, full_name: 'Сидоров Алексей', specialty: 'Системный администратор', group_name: 'ИСП-21', year: 2024, contact_email: 'alex@example.com' }
+            { id: 3, user_id: null, full_name: 'Сидоров Алексей', specialty: 'Системный администратор', group_name: 'ИСП-21', year: 2024, contact_email: 'alex@example.com' },
+            { id: 4, user_id: null, full_name: 'Козлов Дмитрий', specialty: 'Web-разработчик', group_name: 'ИСП-22', year: 2025, contact_email: 'dmitry@example.com' },
+            { id: 5, user_id: null, full_name: 'Морозова Екатерина', specialty: 'Аналитик', group_name: 'ИСП-22', year: 2025, contact_email: 'ekaterina@example.com' },
+            { id: 6, user_id: null, full_name: 'Новиков Павел', specialty: 'Технический специалист', group_name: 'ИСП-21', year: 2024, contact_email: 'pavel@example.com' }
         ];
         localStorage.setItem('graduates', JSON.stringify(defaultGrads));
     }
@@ -156,7 +160,6 @@
     }
 
     function updateUserProfile(fullName, specialty, group, contact) {
-        // Обновляем в таблице graduates
         let grads = JSON.parse(localStorage.getItem('graduates'));
         const gradIndex = grads.findIndex(g => g.user_id === currentUser.id);
         if (gradIndex !== -1) {
@@ -165,7 +168,6 @@
             grads[gradIndex].group_name = group;
             grads[gradIndex].contact_email = contact;
         } else {
-            // Если нет анкеты — создаём
             grads.push({
                 id: grads.length + 1,
                 user_id: currentUser.id,
@@ -178,7 +180,6 @@
         }
         localStorage.setItem('graduates', JSON.stringify(grads));
         
-        // Обновляем в таблице users
         let users = JSON.parse(localStorage.getItem('users'));
         const userIndex = users.findIndex(u => u.id === currentUser.id);
         if (userIndex !== -1) {
@@ -223,7 +224,6 @@
         return grads.find(g => g.user_id === currentUser?.id);
     }
 
-    // ========== ОТРИСОВКА ==========
     const contentDiv = document.getElementById('dynamicContent');
     const heroBlock = document.getElementById('heroBlock');
 
