@@ -6,7 +6,6 @@
     <title>Портал выпускных групп</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { background-color: #F8F9FA; font-family: 'Segoe UI', Roboto, sans-serif; }
         .navbar-custom { background-color: #0B3B5F; }
@@ -62,108 +61,42 @@
 </footer>
 
 <script>
-    // ==================== ПОДКЛЮЧЕНИЕ К SUPABASE ====================
-    const SUPABASE_URL = 'https://adezgrsqixyyraokvmch.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_Ous-e7hlQ9tI9DpSU7Qr8w_Bs_Z9RdH';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // ========== ИНИЦИАЛИЗАЦИЯ localStorage ==========
+    if (!localStorage.getItem('users')) {
+        const defaultUsers = [
+            { id: 1, email: 'admin@portal.ru', password: 'admin123', role: 'admin', full_name: 'Администратор' }
+        ];
+        localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
 
-    // ==================== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ====================
+    if (!localStorage.getItem('news')) {
+        const defaultNews = [
+            { id: 1, title: 'Добро пожаловать на портал!', content: 'Портал выпускников успешно запущен. Здесь вы можете найти информацию о выпускниках, читать новости и оставаться на связи.', date: '2026-06-03' },
+            { id: 2, title: 'Стажировка в IT-компании', content: 'Приглашаем выпускников на оплачиваемую стажировку в крупную IT-компанию. Срок подачи до 20 июня.', date: '2026-06-02' },
+            { id: 3, title: 'День карьеры 2026', content: '15 июня в колледже пройдёт ярмарка вакансий с участием 10+ компаний. Приходите!', date: '2026-06-01' }
+        ];
+        localStorage.setItem('news', JSON.stringify(defaultNews));
+    }
+
+    if (!localStorage.getItem('graduates')) {
+        const defaultGrads = [
+            { id: 1, full_name: 'Иванов Иван', specialty: 'Программист', group_name: 'ИСП-21', year: 2024, contact_email: 'ivan@example.com' },
+            { id: 2, full_name: 'Петрова Анна', specialty: 'Дизайнер', group_name: 'ДИЗ-22', year: 2024, contact_email: 'anna@example.com' },
+            { id: 3, full_name: 'Сидоров Алексей', specialty: 'Системный администратор', group_name: 'ИСП-21', year: 2024, contact_email: 'alex@example.com' }
+        ];
+        localStorage.setItem('graduates', JSON.stringify(defaultGrads));
+    }
+
     let currentUser = null;
 
-    // ==================== ФУНКЦИИ РАБОТЫ С SUPABASE ====================
-    
-    // Проверка сессии при загрузке
-    async function checkSession() {
-        const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
-            // Получаем дополнительные данные о пользователе из таблицы users
-            const { data: userData } = await supabaseClient
-                .from('users')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
-            
-            currentUser = {
-                id: session.user.id,
-                email: session.user.email,
-                role: userData?.role || 'user',
-                full_name: userData?.full_name || session.user.email
-            };
+    function loadSession() {
+        const saved = localStorage.getItem('currentUser');
+        if (saved) {
+            currentUser = JSON.parse(saved);
             updateNavBySession();
         }
-        return session;
     }
 
-    // Вход
-    async function loginUser(email, password) {
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-        if (error) {
-            console.error(error);
-            return false;
-        }
-        await checkSession();
-        return true;
-    }
-
-    // Регистрация
-    async function registerUser(fullName, email, password, group, specialty) {
-        // Сначала регистрируем в auth
-        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password
-        });
-        
-        if (authError) {
-            console.error(authError);
-            return false;
-        }
-        
-        if (authData.user) {
-            // Добавляем запись в таблицу users
-            const { error: userError } = await supabaseClient
-                .from('users')
-                .insert([
-                    { 
-                        id: authData.user.id, 
-                        email: email, 
-                        role: 'user', 
-                        full_name: fullName 
-                    }
-                ]);
-            
-            if (userError) console.error(userError);
-            
-            // Добавляем анкету в graduates
-            const { error: gradError } = await supabaseClient
-                .from('graduates')
-                .insert([
-                    {
-                        user_id: authData.user.id,
-                        full_name: fullName,
-                        specialty: specialty || '',
-                        group_name: group || '',
-                        year: new Date().getFullYear(),
-                        contact_email: email
-                    }
-                ]);
-            
-            if (gradError) console.error(gradError);
-        }
-        return true;
-    }
-
-    // Выход
-    async function logoutUser() {
-        await supabaseClient.auth.signOut();
-        currentUser = null;
-        updateNavBySession();
-        showPage('home');
-    }
-
-    // Обновление навигации
     function updateNavBySession() {
         if (currentUser) {
             document.getElementById('authNavBtn').style.display = 'none';
@@ -181,115 +114,102 @@
         }
     }
 
-    // Получение новостей из Supabase
-    async function getNews() {
-        const { data, error } = await supabaseClient
-            .from('news')
-            .select('*')
-            .order('id', { ascending: false });
-        if (error) console.error(error);
-        return data || [];
-    }
-
-    // Добавление новости (только админ)
-    async function addNewsItem(title, content) {
-        if (!currentUser || currentUser.role !== 'admin') return false;
-        const { error } = await supabaseClient
-            .from('news')
-            .insert([
-                { 
-                    title: title, 
-                    content: content, 
-                    date: new Date().toISOString().slice(0,10),
-                    author_id: currentUser.id
-                }
-            ]);
-        if (error) console.error(error);
-        return !error;
-    }
-
-    // Удаление новости (только админ)
-    async function deleteNewsItem(id) {
-        if (!currentUser || currentUser.role !== 'admin') return false;
-        const { error } = await supabaseClient
-            .from('news')
-            .delete()
-            .eq('id', id);
-        return !error;
-    }
-
-    // Получение выпускников
-    async function getGraduates() {
-        const { data, error } = await supabaseClient
-            .from('graduates')
-            .select('*');
-        if (error) console.error(error);
-        return data || [];
-    }
-
-    // Удаление выпускника (только админ)
-    async function deleteGraduate(id, userId) {
-        if (!currentUser || currentUser.role !== 'admin') return false;
-        
-        // Удаляем из graduates
-        const { error: gradError } = await supabaseClient
-            .from('graduates')
-            .delete()
-            .eq('id', id);
-        
-        // Удаляем пользователя (если нужно)
-        if (userId) {
-            // Внимание: удаление пользователя из auth требует админ-прав в Supabase
-            // Для упрощения удаляем только из таблицы users
-            await supabaseClient
-                .from('users')
-                .delete()
-                .eq('id', userId);
+    function loginUser(email, pwd) {
+        const users = JSON.parse(localStorage.getItem('users'));
+        const found = users.find(u => u.email === email && u.password === pwd);
+        if (found) {
+            currentUser = { id: found.id, email: found.email, role: found.role, full_name: found.full_name };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            updateNavBySession();
+            return true;
         }
-        return !gradError;
+        return false;
     }
 
-    // Получение анкеты текущего пользователя
-    async function getCurrentUserGraduate() {
-        if (!currentUser) return null;
-        const { data, error } = await supabaseClient
-            .from('graduates')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .single();
-        if (error && error.code !== 'PGRST116') console.error(error);
-        return data;
+    function registerUser(fullName, email, pwd, group, specialty) {
+        let users = JSON.parse(localStorage.getItem('users'));
+        if (users.find(u => u.email === email)) return false;
+        const newId = users.length + 1;
+        const newUser = {
+            id: newId,
+            email: email,
+            password: pwd,
+            role: 'user',
+            full_name: fullName
+        };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+
+        let grads = JSON.parse(localStorage.getItem('graduates'));
+        const newGrad = {
+            id: grads.length + 1,
+            full_name: fullName,
+            specialty: specialty || '',
+            group_name: group || '',
+            year: new Date().getFullYear(),
+            contact_email: email
+        };
+        grads.push(newGrad);
+        localStorage.setItem('graduates', JSON.stringify(grads));
+        return true;
     }
 
-    // Обновление профиля пользователя
-    async function updateUserProfile(fullName, specialty, group, contactEmail) {
-        if (!currentUser) return false;
+    function updateUserProfile(fullName, specialty, group, contact) {
+        let grads = JSON.parse(localStorage.getItem('graduates'));
+        const gradIndex = grads.findIndex(g => g.user_id === currentUser?.id);
+        if (gradIndex !== -1) {
+            grads[gradIndex].full_name = fullName;
+            grads[gradIndex].specialty = specialty;
+            grads[gradIndex].group_name = group;
+            grads[gradIndex].contact_email = contact;
+            localStorage.setItem('graduates', JSON.stringify(grads));
+        }
         
-        // Обновляем в таблице users
-        await supabaseClient
-            .from('users')
-            .update({ full_name: fullName })
-            .eq('id', currentUser.id);
-        
-        // Обновляем в graduates
-        const { error } = await supabaseClient
-            .from('graduates')
-            .update({ 
-                full_name: fullName, 
-                specialty: specialty, 
-                group_name: group, 
-                contact_email: contactEmail 
-            })
-            .eq('user_id', currentUser.id);
-        
-        if (!error) {
+        let users = JSON.parse(localStorage.getItem('users'));
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        if (userIndex !== -1) {
+            users[userIndex].full_name = fullName;
+            localStorage.setItem('users', JSON.stringify(users));
             currentUser.full_name = fullName;
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
             updateNavBySession();
         }
-        return !error;
+        return true;
     }
 
-    // ==================== ОТРИСОВКА СТРАНИЦ ====================
+    function logoutUser() {
+        localStorage.removeItem('currentUser');
+        currentUser = null;
+        updateNavBySession();
+        showPage('home');
+    }
+
+    function addNewsItem(title, content) {
+        const newsArr = JSON.parse(localStorage.getItem('news'));
+        const newId = newsArr.length + 1;
+        const newNews = {
+            id: newId,
+            title: title,
+            content: content,
+            date: new Date().toISOString().slice(0,10)
+        };
+        newsArr.unshift(newNews);
+        localStorage.setItem('news', JSON.stringify(newsArr));
+        return true;
+    }
+
+    function deleteNewsItem(id) {
+        let newsArr = JSON.parse(localStorage.getItem('news'));
+        newsArr = newsArr.filter(n => n.id != id);
+        localStorage.setItem('news', JSON.stringify(newsArr));
+    }
+
+    function getCurrentUserGraduate() {
+        const grads = JSON.parse(localStorage.getItem('graduates'));
+        return grads.find(g => g.user_id === currentUser?.id);
+    }
+
+    // ========== ОТРИСОВКА ==========
     const contentDiv = document.getElementById('dynamicContent');
     const heroBlock = document.getElementById('heroBlock');
 
@@ -318,10 +238,10 @@
         `;
     }
 
-    async function renderNewsPage() {
-        const news = await getNews();
+    function renderNewsPage() {
+        const newsArr = JSON.parse(localStorage.getItem('news'));
         let listHtml = '';
-        news.forEach(n => {
+        newsArr.forEach(n => {
             listHtml += `
                 <div class="card mb-3 card-news">
                     <div class="card-body">
@@ -349,10 +269,10 @@
         contentDiv.innerHTML = `<h2>📰 Новости</h2>${listHtml || '<p>Новостей нет</p>'}${addForm}`;
     }
 
-    async function renderGraduatesPage() {
-        const graduates = await getGraduates();
+    function renderGraduatesPage() {
+        const grads = JSON.parse(localStorage.getItem('graduates'));
         let gradHtml = '';
-        graduates.forEach(g => {
+        grads.forEach(g => {
             gradHtml += `
                 <div class="col-md-4 mb-4">
                     <div class="card card-graduate text-center">
@@ -364,7 +284,7 @@
                             <p class="small">🎓 ${g.year || '—'}</p>
                             <hr>
                             <a href="mailto:${g.contact_email}" class="btn btn-sm btn-outline-secondary me-2">Связаться</a>
-                            ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteGraduateAndRefresh(${g.id}, '${g.user_id}')"><i class="fas fa-trash"></i> Удалить</button>` : ''}
+                            ${currentUser && currentUser.role === 'admin' ? `<button class="btn btn-sm btn-danger" onclick="deleteGraduateAndRefresh(${g.id})"><i class="fas fa-trash"></i> Удалить</button>` : ''}
                         </div>
                     </div>
                 </div>
@@ -373,12 +293,12 @@
         contentDiv.innerHTML = `<h2>⭐ Наши выпускники</h2><div class="row">${gradHtml || '<p>Пока нет выпускников. Зарегистрируйтесь, чтобы добавить свою анкету!</p>'}</div>`;
     }
 
-    async function renderProfilePage() {
+    function renderProfilePage() {
         if (!currentUser) {
             showPage('login');
             return;
         }
-        const grad = await getCurrentUserGraduate();
+        const grad = getCurrentUserGraduate();
         contentDiv.innerHTML = `
             <div class="row justify-content-center">
                 <div class="col-md-6">
@@ -428,32 +348,29 @@
         `;
     }
 
-    // ==================== ОБРАБОТЧИКИ ====================
     window.showRegisterFormInline = function() {
         const block = document.getElementById('registerBlock');
         if (block) block.style.display = 'block';
     };
 
-    window.doLogin = async function() {
+    window.doLogin = function() {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPass').value;
-        const success = await loginUser(email, pass);
-        if (success) {
+        if (loginUser(email, pass)) {
             showPage('home');
         } else {
             alert('Неверный email или пароль. Админ: admin@portal.ru / admin123');
         }
     };
 
-    window.doRegister = async function() {
+    window.doRegister = function() {
         const name = document.getElementById('regName').value;
         const email = document.getElementById('regEmail').value;
         const pwd = document.getElementById('regPass').value;
         const group = document.getElementById('regGroup').value;
         const specialty = document.getElementById('regSpecialty').value;
         if (name && email && pwd) {
-            const success = await registerUser(name, email, pwd, group, specialty);
-            if (success) {
+            if (registerUser(name, email, pwd, group, specialty)) {
                 alert('Регистрация успешна! Теперь войдите.');
                 showPage('login');
             } else {
@@ -464,38 +381,40 @@
         }
     };
 
-    window.deleteAndRefreshNews = async function(id) {
-        await deleteNewsItem(id);
+    window.deleteAndRefreshNews = function(id) {
+        deleteNewsItem(id);
         renderNewsPage();
     };
 
-    window.deleteGraduateAndRefresh = async function(gradId, userId) {
+    window.deleteGraduateAndRefresh = function(gradId) {
         if (confirm('Удалить анкету выпускника?')) {
-            await deleteGraduate(gradId, userId);
+            let grads = JSON.parse(localStorage.getItem('graduates'));
+            grads = grads.filter(g => g.id !== gradId);
+            localStorage.setItem('graduates', JSON.stringify(grads));
             renderGraduatesPage();
         }
     };
 
-    window.createNewsAndRefresh = async function() {
+    window.createNewsAndRefresh = function() {
         const title = document.getElementById('newsTitleInp').value;
         const content = document.getElementById('newsTextInp').value;
         if (title && content) {
-            await addNewsItem(title, content);
+            addNewsItem(title, content);
             renderNewsPage();
         } else {
             alert('Заполните заголовок и текст');
         }
     };
 
-    window.saveProfile = async function() {
+    window.saveProfile = function() {
         const name = document.getElementById('profileName').value;
         const specialty = document.getElementById('profileSpecialty').value;
         const group = document.getElementById('profileGroup').value;
         const contact = document.getElementById('profileContact').value;
         if (name) {
-            await updateUserProfile(name, specialty, group, contact);
+            updateUserProfile(name, specialty, group, contact);
             alert('Профиль обновлён!');
-            renderProfilePage();
+            showPage('profile');
         } else {
             alert('Заполните ФИО');
         }
@@ -511,10 +430,8 @@
         });
     }
 
-    // ==================== ЗАПУСК ====================
-    checkSession().then(() => {
-        showPage('home');
-    });
+    loadSession();
+    showPage('home');
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
